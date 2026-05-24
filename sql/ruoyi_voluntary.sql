@@ -505,7 +505,19 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 (1057, '生成删除', 116, 3, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:remove', '#', 'admin', '2025-12-18 14:30:59', '', NULL, ''),
 (1058, '导入代码', 116, 4, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:import', '#', 'admin', '2025-12-18 14:30:59', '', NULL, ''),
 (1059, '预览代码', 116, 5, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:preview', '#', 'admin', '2025-12-18 14:30:59', '', NULL, ''),
-(1060, '生成代码', 116, 6, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:code', '#', 'admin', '2025-12-18 14:30:59', '', NULL, '');
+(1060, '生成代码', 116, 6, '#', '', '', 1, 0, 'F', '0', '0', 'tool:gen:code', '#', 'admin', '2025-12-18 14:30:59', '', NULL, ''),
+(2000, '志愿管理', 0, 2, 'voluntary', NULL, '', 1, 0, 'M', '0', '0', '', 'peoples', 'admin', NOW(), '', NULL, '志愿活动管理目录'),
+(2001, '志愿者审核', 2000, 1, 'volunteer', 'voluntary/volunteer/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:volunteer:list', 'people', 'admin', NOW(), '', NULL, '志愿者档案与审核管理'),
+(2002, '志愿者查询', 2001, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:query', '#', 'admin', NOW(), '', NULL, ''),
+(2003, '志愿者编辑', 2001, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:edit', '#', 'admin', NOW(), '', NULL, ''),
+(2004, '志愿者审核', 2001, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:audit', '#', 'admin', NOW(), '', NULL, '');
+
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
+(2, 2000),
+(2, 2001),
+(2, 2002),
+(2, 2003),
+(2, 2004);
 
 ALTER TABLE `sys_user_role`
   ADD PRIMARY KEY (`user_id`,`role_id`);
