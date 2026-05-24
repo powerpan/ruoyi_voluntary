@@ -344,6 +344,56 @@ CREATE TABLE `vol_audit_record` (
   `remark` varchar(500) DEFAULT NULL COMMENT '备注'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='审核记录表';
 
+DROP TABLE IF EXISTS `vol_activity`;
+CREATE TABLE `vol_activity` (
+  `id` bigint(20) NOT NULL COMMENT '活动ID',
+  `title` varchar(160) NOT NULL COMMENT '活动标题',
+  `activity_type` varchar(64) DEFAULT '' COMMENT '活动类型',
+  `cover_url` varchar(255) DEFAULT '' COMMENT '封面图',
+  `service_location` varchar(255) NOT NULL COMMENT '服务地点',
+  `start_time` datetime NOT NULL COMMENT '活动开始时间',
+  `end_time` datetime NOT NULL COMMENT '活动结束时间',
+  `signup_start_time` datetime NOT NULL COMMENT '报名开始时间',
+  `signup_end_time` datetime NOT NULL COMMENT '报名截止时间',
+  `recruit_count` int(11) NOT NULL DEFAULT '0' COMMENT '招募人数',
+  `approved_count` int(11) NOT NULL DEFAULT '0' COMMENT '已通过报名人数',
+  `service_target` varchar(255) DEFAULT '' COMMENT '服务对象',
+  `content` text COMMENT '活动内容',
+  `requirements` varchar(1000) DEFAULT '' COMMENT '报名要求',
+  `manager_name` varchar(64) DEFAULT '' COMMENT '活动负责人',
+  `manager_phone` varchar(32) DEFAULT '' COMMENT '负责人联系电话',
+  `max_service_minutes` int(11) DEFAULT NULL COMMENT '最大可计入服务分钟数',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '活动状态（0草稿 1已发布 2已结束 3已下架 4已取消）',
+  `publish_time` datetime DEFAULT NULL COMMENT '发布时间',
+  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='志愿活动表';
+
+DROP TABLE IF EXISTS `vol_activity_signup`;
+CREATE TABLE `vol_activity_signup` (
+  `id` bigint(20) NOT NULL COMMENT '报名ID',
+  `activity_id` bigint(20) NOT NULL COMMENT '活动ID',
+  `volunteer_user_id` bigint(20) NOT NULL COMMENT '志愿者用户ID',
+  `real_name` varchar(64) DEFAULT '' COMMENT '报名时姓名快照',
+  `phone` varchar(32) DEFAULT '' COMMENT '报名时联系电话快照',
+  `organization` varchar(128) DEFAULT '' COMMENT '报名时组织快照',
+  `apply_reason` varchar(1000) DEFAULT '' COMMENT '报名理由',
+  `experience` varchar(1000) DEFAULT '' COMMENT '相关经验',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '报名状态（0待筛选 1通过 2拒绝 3候补 4取消）',
+  `review_reason` varchar(500) DEFAULT '' COMMENT '筛选意见',
+  `reviewer_id` bigint(20) DEFAULT NULL COMMENT '处理人ID',
+  `reviewer_name` varchar(64) DEFAULT '' COMMENT '处理人姓名快照',
+  `review_time` datetime DEFAULT NULL COMMENT '处理时间',
+  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '报名时间',
+  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='活动报名表';
+
 -- Clean RuoYi seed data for local voluntary development.
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, '主框架页-默认皮肤样式名称', 'sys.index.skinName', 'skin-blue', 'Y', 'admin', NOW(), '', NULL, '蓝色 skin-blue、绿色 skin-green、紫色 skin-purple、红色 skin-red、黄色 skin-yellow'),
@@ -370,7 +420,9 @@ INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `status`, `cre
 (9, '操作类型', 'sys_oper_type', '0', 'admin', NOW(), '', NULL, '操作类型列表'),
 (10, '系统状态', 'sys_common_status', '0', 'admin', NOW(), '', NULL, '登录状态列表'),
 (101, '活动类型', 'vol_activity_type', '0', 'admin', NOW(), '', NULL, '活动类型'),
-(103, '审核状态', 'vol_audit_status', '0', 'admin', NOW(), '', NULL, '志愿业务审核状态');
+(102, '活动状态', 'vol_activity_status', '0', 'admin', NOW(), '', NULL, '活动发布状态'),
+(103, '审核状态', 'vol_audit_status', '0', 'admin', NOW(), '', NULL, '志愿业务审核状态'),
+(104, '报名状态', 'vol_signup_status', '0', 'admin', NOW(), '', NULL, '活动报名筛选状态');
 
 INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, 1, '男', '0', 'sys_user_sex', '', '', 'Y', '0', 'admin', NOW(), '', NULL, '性别男'),
@@ -392,7 +444,17 @@ INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value
 (120, 1, '待审核', '0', 'vol_audit_status', '', 'warning', 'Y', '0', 'admin', NOW(), '', NULL, '待审核'),
 (121, 2, '通过', '1', 'vol_audit_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '通过'),
 (122, 3, '驳回', '2', 'vol_audit_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '驳回'),
-(123, 4, '禁用', '3', 'vol_audit_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '禁用');
+(123, 4, '禁用', '3', 'vol_audit_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '禁用'),
+(130, 1, '草稿', '0', 'vol_activity_status', '', 'info', 'Y', '0', 'admin', NOW(), '', NULL, '草稿'),
+(131, 2, '已发布', '1', 'vol_activity_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '已发布'),
+(132, 3, '已结束', '2', 'vol_activity_status', '', 'primary', 'N', '0', 'admin', NOW(), '', NULL, '已结束'),
+(133, 4, '已下架', '3', 'vol_activity_status', '', 'warning', 'N', '0', 'admin', NOW(), '', NULL, '已下架'),
+(134, 5, '已取消', '4', 'vol_activity_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '已取消'),
+(140, 1, '待筛选', '0', 'vol_signup_status', '', 'warning', 'Y', '0', 'admin', NOW(), '', NULL, '待筛选'),
+(141, 2, '通过', '1', 'vol_signup_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '通过'),
+(142, 3, '拒绝', '2', 'vol_signup_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '拒绝'),
+(143, 4, '候补', '3', 'vol_signup_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '候补'),
+(144, 5, '取消', '4', 'vol_signup_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '取消');
 
 INSERT INTO `sys_post` (`post_id`, `post_code`, `post_name`, `post_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, 'ceo', '平台负责人', 1, '0', 'admin', NOW(), '', NULL, ''),
@@ -510,14 +572,28 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 (2001, '志愿者审核', 2000, 1, 'volunteer', 'voluntary/volunteer/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:volunteer:list', 'people', 'admin', NOW(), '', NULL, '志愿者档案与审核管理'),
 (2002, '志愿者查询', 2001, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:query', '#', 'admin', NOW(), '', NULL, ''),
 (2003, '志愿者编辑', 2001, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:edit', '#', 'admin', NOW(), '', NULL, ''),
-(2004, '志愿者审核', 2001, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:audit', '#', 'admin', NOW(), '', NULL, '');
+(2004, '志愿者审核', 2001, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:audit', '#', 'admin', NOW(), '', NULL, ''),
+(2010, '活动管理', 2000, 2, 'activity', 'voluntary/activity/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:activity:list', 'date', 'admin', NOW(), '', NULL, '活动创建、发布与维护'),
+(2011, '活动查询', 2010, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:activity:query', '#', 'admin', NOW(), '', NULL, ''),
+(2012, '活动新增', 2010, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:activity:add', '#', 'admin', NOW(), '', NULL, ''),
+(2013, '活动编辑', 2010, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:activity:edit', '#', 'admin', NOW(), '', NULL, ''),
+(2020, '报名管理', 2000, 3, 'signup', 'voluntary/signup/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:signup:list', 'form', 'admin', NOW(), '', NULL, '活动报名筛选管理'),
+(2021, '报名查询', 2020, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:query', '#', 'admin', NOW(), '', NULL, ''),
+(2022, '报名筛选', 2020, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:review', '#', 'admin', NOW(), '', NULL, '');
 
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (2, 2000),
 (2, 2001),
 (2, 2002),
 (2, 2003),
-(2, 2004);
+(2, 2004),
+(2, 2010),
+(2, 2011),
+(2, 2012),
+(2, 2013),
+(2, 2020),
+(2, 2021),
+(2, 2022);
 
 ALTER TABLE `sys_user_role`
   ADD PRIMARY KEY (`user_id`,`role_id`);
@@ -595,14 +671,14 @@ ALTER TABLE `sys_dict_data`
   ADD PRIMARY KEY (`dict_code`);
 
 ALTER TABLE `sys_dict_data`
-  MODIFY `dict_code` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典编码', AUTO_INCREMENT=124;
+  MODIFY `dict_code` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典编码', AUTO_INCREMENT=145;
 
 ALTER TABLE `sys_dict_type`
   ADD PRIMARY KEY (`dict_id`),
   ADD UNIQUE KEY `dict_type` (`dict_type`);
 
 ALTER TABLE `sys_dict_type`
-  MODIFY `dict_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键', AUTO_INCREMENT=104;
+  MODIFY `dict_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键', AUTO_INCREMENT=105;
 
 ALTER TABLE `sys_user_post`
   ADD PRIMARY KEY (`user_id`,`post_id`);
@@ -644,6 +720,24 @@ ALTER TABLE `vol_audit_record`
 
 ALTER TABLE `vol_audit_record`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '审核记录ID', AUTO_INCREMENT=1;
+
+ALTER TABLE `vol_activity`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_activity_public` (`status`,`start_time`,`activity_type`),
+  ADD KEY `idx_activity_signup_time` (`signup_start_time`,`signup_end_time`),
+  ADD KEY `idx_activity_title` (`title`);
+
+ALTER TABLE `vol_activity`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '活动ID', AUTO_INCREMENT=1;
+
+ALTER TABLE `vol_activity_signup`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_signup_activity_user` (`activity_id`,`volunteer_user_id`),
+  ADD KEY `idx_signup_activity_status` (`activity_id`,`status`,`create_time`),
+  ADD KEY `idx_signup_user_status` (`volunteer_user_id`,`status`,`create_time`);
+
+ALTER TABLE `vol_activity_signup`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '报名ID', AUTO_INCREMENT=1;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
