@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolServiceRecordMapper">
+
+    <resultMap type="VolServiceRecord" id="VolServiceRecordResult">
+        <id property="id" column="id"/>
+        <result property="activityId" column="activity_id"/>
+        <result property="signupId" column="signup_id"/>
+        <result property="checkinRecordId" column="checkin_record_id"/>
+        <result property="volunteerUserId" column="volunteer_user_id"/>
+        <result property="serviceDate" column="service_date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="serviceMinutes" column="service_minutes"/>
+        <result property="status" column="status"/>
+        <result property="confirmUserId" column="confirm_user_id"/>
+        <result property="confirmTime" column="confirm_time"/>
+        <result property="adjustReason" column="adjust_reason"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="activityTitle" column="activity_title"/>
+        <result property="serviceLocation" column="service_location"/>
+        <result property="volunteerRealName" column="volunteer_real_name"/>
+        <result property="volunteerPhone" column="volunteer_phone"/>
+        <result property="volunteerOrganization" column="volunteer_organization"/>
+    </resultMap>
+
+    <sql id="selectVolServiceRecordVo">
+        select r.id, r.activity_id, r.signup_id, r.checkin_record_id, r.volunteer_user_id,
+               r.service_date, r.start_time, r.end_time, r.service_minutes, r.status,
+               r.confirm_user_id, r.confirm_time, r.adjust_reason,
+               r.create_by, r.create_time, r.update_by, r.update_time, r.remark,
+               a.title as activity_title, a.service_location,
+               s.real_name as volunteer_real_name, s.phone as volunteer_phone,
+               s.organization as volunteer_organization
+        from vol_service_record r
+        left join vol_activity a on a.id = r.activity_id
+        left join vol_activity_signup s on s.id = r.signup_id
+    </sql>
+
+    <select id="selectVolServiceRecordById" parameterType="Long" resultMap="VolServiceRecordResult">
+        <include refid="selectVolServiceRecordVo"/>
+        where r.id = #{id}
+    </select>
+
+    <select id="selectVolServiceRecordByCheckinRecordId" parameterType="Long" resultMap="VolServiceRecordResult">
+        <include refid="selectVolServiceRecordVo"/>
+        where r.checkin_record_id = #{checkinRecordId}
+        limit 1
+    </select>
+
+    <select id="selectVolServiceRecordList" parameterType="VolServiceRecord" resultMap="VolServiceRecordResult">
+        <include refid="selectVolServiceRecordVo"/>
+        <where>
+            <if test="activityId != null">and r.activity_id = #{activityId}</if>
+            <if test="signupId != null">and r.signup_id = #{signupId}</if>
+            <if test="checkinRecordId != null">and r.checkin_record_id = #{checkinRecordId}</if>
+            <if test="volunteerUserId != null">and r.volunteer_user_id = #{volunteerUserId}</if>
+            <if test="serviceDate != null">and r.service_date = #{serviceDate}</if>
+            <if test="status != null">and r.status = #{status}</if>
+            <if test="activityTitle != null and activityTitle != ''">and a.title like concat('%', #{activityTitle}, '%')</if>
+            <if test="volunteerRealName != null and volunteerRealName != ''">
+                and s.real_name like concat('%', #{volunteerRealName}, '%')
+            </if>
+            <if test="volunteerPhone != null and volunteerPhone != ''">
+                and s.phone like concat('%', #{volunteerPhone}, '%')
+            </if>
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                and r.service_date &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                and r.service_date &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by r.service_date desc, r.id desc
+    </select>
+
+    <select id="sumEffectiveServiceMinutesByVolunteerUserId" parameterType="Long" resultType="int">
+        select ifnull(sum(service_minutes), 0)
+        from vol_service_record
+        where volunteer_user_id = #{volunteerUserId}
+          and status = 1
+    </select>
+
+    <select id="countEffectiveServiceRecordByVolunteerUserId" parameterType="Long" resultType="int">
+        select count(1)
+        from vol_service_record
+        where volunteer_user_id = #{volunteerUserId}
+          and status = 1
+    </select>
+
+    <insert id="insertVolServiceRecord" parameterType="VolServiceRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_service_record(
+            activity_id, signup_id, checkin_record_id, volunteer_user_id,
+            service_date, start_time, end_time, service_minutes, status,
+            confirm_user_id, confirm_time, adjust_reason,
+            create_by, create_time, update_by, update_time, remark
+        ) values (
+            #{activityId}, #{signupId}, #{checkinRecordId}, #{volunteerUserId},
+            #{serviceDate}, #{startTime}, #{endTime}, #{serviceMinutes}, #{status},
+            #{confirmUserId}, #{confirmTime}, #{adjustReason},
+            #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="updateVolServiceRecord" parameterType="VolServiceRecord">
+        update vol_service_record
+        <set>
+            <if test="activityId != null">activity_id = #{activityId},</if>
+            <if test="signupId != null">signup_id = #{signupId},</if>
+            <if test="checkinRecordId != null">checkin_record_id = #{checkinRecordId},</if>
+            <if test="volunteerUserId != null">volunteer_user_id = #{volunteerUserId},</if>
+            <if test="serviceDate != null">service_date = #{serviceDate},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="serviceMinutes != null">service_minutes = #{serviceMinutes},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="confirmUserId != null">confirm_user_id = #{confirmUserId},</if>
+            <if test="confirmTime != null">confirm_time = #{confirmTime},</if>
+            <if test="adjustReason != null">adjust_reason = #{adjustReason},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVolServiceRecordById" parameterType="Long">
+        delete from vol_service_record where id = #{id}
+    </delete>
+
+    <delete id="deleteVolServiceRecordByIds" parameterType="Long">
+        delete from vol_service_record where id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolActivityQrTokenMapper">
+
+    <resultMap type="VolActivityQrToken" id="VolActivityQrTokenResult">
+        <id property="id" column="id"/>
+        <result property="activityId" column="activity_id"/>
+        <result property="token" column="token"/>
+        <result property="actionType" column="action_type"/>
+        <result property="expireTime" column="expire_time"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="activityTitle" column="activity_title"/>
+        <result property="serviceLocation" column="service_location"/>
+    </resultMap>
+
+    <sql id="selectVolActivityQrTokenVo">
+        select q.id, q.activity_id, q.token, q.action_type, q.expire_time, q.status,
+               q.create_by, q.create_time, q.update_by, q.update_time, q.remark,
+               a.title as activity_title, a.service_location
+        from vol_activity_qr_token q
+        left join vol_activity a on a.id = q.activity_id
+    </sql>
+
+    <select id="selectVolActivityQrTokenById" parameterType="Long" resultMap="VolActivityQrTokenResult">
+        <include refid="selectVolActivityQrTokenVo"/>
+        where q.id = #{id}
+    </select>
+
+    <select id="selectVolActivityQrTokenByToken" parameterType="String" resultMap="VolActivityQrTokenResult">
+        <include refid="selectVolActivityQrTokenVo"/>
+        where q.token = #{token}
+        limit 1
+    </select>
+
+    <select id="selectValidVolActivityQrTokenByToken" parameterType="String" resultMap="VolActivityQrTokenResult">
+        <include refid="selectVolActivityQrTokenVo"/>
+        where q.token = #{token}
+          and q.status = 0
+          and q.expire_time &gt;= now()
+        limit 1
+    </select>
+
+    <select id="selectVolActivityQrTokenList" parameterType="VolActivityQrToken" resultMap="VolActivityQrTokenResult">
+        <include refid="selectVolActivityQrTokenVo"/>
+        <where>
+            <if test="activityId != null">and q.activity_id = #{activityId}</if>
+            <if test="token != null and token != ''">and q.token = #{token}</if>
+            <if test="actionType != null and actionType != ''">and q.action_type = #{actionType}</if>
+            <if test="status != null">and q.status = #{status}</if>
+            <if test="activityTitle != null and activityTitle != ''">and a.title like concat('%', #{activityTitle}, '%')</if>
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                and q.create_time &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                and q.create_time &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by q.create_time desc, q.id desc
+    </select>
+
+    <insert id="insertVolActivityQrToken" parameterType="VolActivityQrToken" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_activity_qr_token(
+            activity_id, token, action_type, expire_time, status,
+            create_by, create_time, update_by, update_time, remark
+        ) values (
+            #{activityId}, #{token}, #{actionType}, #{expireTime}, #{status},
+            #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="updateVolActivityQrToken" parameterType="VolActivityQrToken">
+        update vol_activity_qr_token
+        <set>
+            <if test="activityId != null">activity_id = #{activityId},</if>
+            <if test="token != null">token = #{token},</if>
+            <if test="actionType != null">action_type = #{actionType},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="disableValidTokens">
+        update vol_activity_qr_token
+        set status = 1,
+            update_by = #{updateBy},
+            update_time = now()
+        where activity_id = #{activityId}
+          and action_type = #{actionType}
+          and status = 0
+    </update>
+
+    <delete id="deleteVolActivityQrTokenById" parameterType="Long">
+        delete from vol_activity_qr_token where id = #{id}
+    </delete>
+
+    <delete id="deleteVolActivityQrTokenByIds" parameterType="Long">
+        delete from vol_activity_qr_token where id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

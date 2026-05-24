@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolCheckinRecordMapper">
+
+    <resultMap type="VolCheckinRecord" id="VolCheckinRecordResult">
+        <id property="id" column="id"/>
+        <result property="activityId" column="activity_id"/>
+        <result property="signupId" column="signup_id"/>
+        <result property="volunteerUserId" column="volunteer_user_id"/>
+        <result property="checkinTime" column="checkin_time"/>
+        <result property="checkoutTime" column="checkout_time"/>
+        <result property="checkinMethod" column="checkin_method"/>
+        <result property="checkoutMethod" column="checkout_method"/>
+        <result property="status" column="status"/>
+        <result property="abnormalReason" column="abnormal_reason"/>
+        <result property="manualReason" column="manual_reason"/>
+        <result property="operatorId" column="operator_id"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="activityTitle" column="activity_title"/>
+        <result property="activityType" column="activity_type"/>
+        <result property="serviceLocation" column="service_location"/>
+        <result property="activityStartTime" column="activity_start_time"/>
+        <result property="activityEndTime" column="activity_end_time"/>
+        <result property="volunteerRealName" column="volunteer_real_name"/>
+        <result property="volunteerPhone" column="volunteer_phone"/>
+        <result property="volunteerOrganization" column="volunteer_organization"/>
+    </resultMap>
+
+    <sql id="selectVolCheckinRecordVo">
+        select c.id, c.activity_id, c.signup_id, c.volunteer_user_id,
+               c.checkin_time, c.checkout_time, c.checkin_method, c.checkout_method,
+               c.status, c.abnormal_reason, c.manual_reason, c.operator_id,
+               c.create_by, c.create_time, c.update_by, c.update_time, c.remark,
+               a.title as activity_title, a.activity_type, a.service_location,
+               a.start_time as activity_start_time, a.end_time as activity_end_time,
+               s.real_name as volunteer_real_name, s.phone as volunteer_phone,
+               s.organization as volunteer_organization
+        from vol_checkin_record c
+        left join vol_activity a on a.id = c.activity_id
+        left join vol_activity_signup s on s.id = c.signup_id
+    </sql>
+
+    <select id="selectVolCheckinRecordById" parameterType="Long" resultMap="VolCheckinRecordResult">
+        <include refid="selectVolCheckinRecordVo"/>
+        where c.id = #{id}
+    </select>
+
+    <select id="selectVolCheckinRecordByActivityIdAndVolunteerUserId" resultMap="VolCheckinRecordResult">
+        <include refid="selectVolCheckinRecordVo"/>
+        where c.activity_id = #{activityId}
+          and c.volunteer_user_id = #{volunteerUserId}
+        limit 1
+    </select>
+
+    <select id="selectVolCheckinRecordList" parameterType="VolCheckinRecord" resultMap="VolCheckinRecordResult">
+        <include refid="selectVolCheckinRecordVo"/>
+        <where>
+            <if test="activityId != null">and c.activity_id = #{activityId}</if>
+            <if test="signupId != null">and c.signup_id = #{signupId}</if>
+            <if test="volunteerUserId != null">and c.volunteer_user_id = #{volunteerUserId}</if>
+            <if test="status != null">and c.status = #{status}</if>
+            <if test="activityTitle != null and activityTitle != ''">and a.title like concat('%', #{activityTitle}, '%')</if>
+            <if test="volunteerRealName != null and volunteerRealName != ''">
+                and s.real_name like concat('%', #{volunteerRealName}, '%')
+            </if>
+            <if test="volunteerPhone != null and volunteerPhone != ''">
+                and s.phone like concat('%', #{volunteerPhone}, '%')
+            </if>
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                and c.create_time &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                and c.create_time &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by c.create_time desc, c.id desc
+    </select>
+
+    <insert id="insertVolCheckinRecord" parameterType="VolCheckinRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_checkin_record(
+            activity_id, signup_id, volunteer_user_id, checkin_time, checkout_time,
+            checkin_method, checkout_method, status, abnormal_reason, manual_reason,
+            operator_id, create_by, create_time, update_by, update_time, remark
+        ) values (
+            #{activityId}, #{signupId}, #{volunteerUserId}, #{checkinTime}, #{checkoutTime},
+            #{checkinMethod}, #{checkoutMethod}, #{status}, #{abnormalReason}, #{manualReason},
+            #{operatorId}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="updateVolCheckinRecord" parameterType="VolCheckinRecord">
+        update vol_checkin_record
+        <set>
+            <if test="activityId != null">activity_id = #{activityId},</if>
+            <if test="signupId != null">signup_id = #{signupId},</if>
+            <if test="volunteerUserId != null">volunteer_user_id = #{volunteerUserId},</if>
+            <if test="checkinTime != null">checkin_time = #{checkinTime},</if>
+            <if test="checkoutTime != null">checkout_time = #{checkoutTime},</if>
+            <if test="checkinMethod != null">checkin_method = #{checkinMethod},</if>
+            <if test="checkoutMethod != null">checkout_method = #{checkoutMethod},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="abnormalReason != null">abnormal_reason = #{abnormalReason},</if>
+            <if test="manualReason != null">manual_reason = #{manualReason},</if>
+            <if test="operatorId != null">operator_id = #{operatorId},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVolCheckinRecordById" parameterType="Long">
+        delete from vol_checkin_record where id = #{id}
+    </delete>
+
+    <delete id="deleteVolCheckinRecordByIds" parameterType="Long">
+        delete from vol_checkin_record where id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
