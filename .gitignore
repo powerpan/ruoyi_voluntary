@@ -12,9 +12,16 @@ workspace.xml
 *.ntvs*
 *.njsproj
 *.sln
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
 
 # Logs
 *.log
+*.log.*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -28,7 +35,14 @@ logs/
 *.war
 *.ear
 **/target/
+**/out/
+**/build/
+**/classes/
 .mvn/timing.properties
+dependency-reduced-pom.xml
+hs_err_pid*
+replay_pid*
+*.hprof
 
 # Frontend dependencies and build outputs
 **/node_modules/
@@ -36,12 +50,23 @@ logs/
 .npm/
 .eslintcache
 .stylelintcache
+**/.cache/
+**/.parcel-cache/
+**/.vite/
+**/.nuxt/
+**/.next/
+**/.output/
 
 # Local runtime and generated files
 .local/
 .codex/
 .agents/
 uploadPath/
+profile/
+avatar/
+storage/
+uploads/
+download/
 db-backups/
 data/
 tmp/
@@ -50,11 +75,15 @@ temp/
 # Environment and deployment overrides
 .env
 .env.*
-!.env.example
-!.env.development
-!.env.production
-!.env.staging
+!**/.env.example
+!**/.env.development
+!**/.env.production
+!**/.env.staging
 deploy/.env
+application-local.yml
+application-*.local.yml
+**/application-local.yml
+**/application-*.local.yml
 
 # Runtime PID files
 *_pid
@@ -65,4 +94,9 @@ coverage/
 reports/
 test-results/
 playwright-report/
+screenshots/
+**/coverage/
+**/reports/
+**/test-results/
+**/playwright-report/
 *.trace.zip
