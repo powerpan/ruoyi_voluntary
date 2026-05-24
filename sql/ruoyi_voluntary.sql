@@ -394,6 +394,64 @@ CREATE TABLE `vol_activity_signup` (
   `remark` varchar(500) DEFAULT NULL COMMENT '备注'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='活动报名表';
 
+DROP TABLE IF EXISTS `vol_activity_qr_token`;
+CREATE TABLE `vol_activity_qr_token` (
+  `id` bigint(20) NOT NULL COMMENT '二维码令牌ID',
+  `activity_id` bigint(20) NOT NULL COMMENT '活动ID',
+  `token` varchar(128) NOT NULL COMMENT '二维码随机令牌',
+  `action_type` varchar(16) NOT NULL COMMENT '操作类型（checkin签到 checkout签退）',
+  `expire_time` datetime NOT NULL COMMENT '过期时间',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '令牌状态（0有效 1失效）',
+  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='活动二维码令牌表';
+
+DROP TABLE IF EXISTS `vol_checkin_record`;
+CREATE TABLE `vol_checkin_record` (
+  `id` bigint(20) NOT NULL COMMENT '签到签退记录ID',
+  `activity_id` bigint(20) NOT NULL COMMENT '活动ID',
+  `signup_id` bigint(20) NOT NULL COMMENT '报名ID',
+  `volunteer_user_id` bigint(20) NOT NULL COMMENT '志愿者用户ID',
+  `checkin_time` datetime DEFAULT NULL COMMENT '签到时间',
+  `checkout_time` datetime DEFAULT NULL COMMENT '签退时间',
+  `checkin_method` varchar(32) DEFAULT '' COMMENT '签到方式（qr manual）',
+  `checkout_method` varchar(32) DEFAULT '' COMMENT '签退方式（qr manual）',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '签到状态（0已签到 1已签退 2异常 3人工确认）',
+  `abnormal_reason` varchar(500) DEFAULT '' COMMENT '异常原因',
+  `manual_reason` varchar(500) DEFAULT '' COMMENT '人工处理原因',
+  `operator_id` bigint(20) DEFAULT NULL COMMENT '人工处理人ID',
+  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='签到签退记录表';
+
+DROP TABLE IF EXISTS `vol_service_record`;
+CREATE TABLE `vol_service_record` (
+  `id` bigint(20) NOT NULL COMMENT '服务记录ID',
+  `activity_id` bigint(20) NOT NULL COMMENT '活动ID',
+  `signup_id` bigint(20) NOT NULL COMMENT '报名ID',
+  `checkin_record_id` bigint(20) NOT NULL COMMENT '签到签退记录ID',
+  `volunteer_user_id` bigint(20) NOT NULL COMMENT '志愿者用户ID',
+  `service_date` date NOT NULL COMMENT '服务日期',
+  `start_time` datetime NOT NULL COMMENT '计入开始时间',
+  `end_time` datetime NOT NULL COMMENT '计入结束时间',
+  `service_minutes` int(11) NOT NULL DEFAULT '0' COMMENT '计入服务分钟数',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '服务记录状态（0待确认 1有效 2异常 3作废）',
+  `confirm_user_id` bigint(20) DEFAULT NULL COMMENT '确认人ID',
+  `confirm_time` datetime DEFAULT NULL COMMENT '确认时间',
+  `adjust_reason` varchar(500) DEFAULT '' COMMENT '修正原因',
+  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='服务记录表';
+
 -- Clean RuoYi seed data for local voluntary development.
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, '主框架页-默认皮肤样式名称', 'sys.index.skinName', 'skin-blue', 'Y', 'admin', NOW(), '', NULL, '蓝色 skin-blue、绿色 skin-green、紫色 skin-purple、红色 skin-red、黄色 skin-yellow'),
@@ -422,7 +480,10 @@ INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `status`, `cre
 (101, '活动类型', 'vol_activity_type', '0', 'admin', NOW(), '', NULL, '活动类型'),
 (102, '活动状态', 'vol_activity_status', '0', 'admin', NOW(), '', NULL, '活动发布状态'),
 (103, '审核状态', 'vol_audit_status', '0', 'admin', NOW(), '', NULL, '志愿业务审核状态'),
-(104, '报名状态', 'vol_signup_status', '0', 'admin', NOW(), '', NULL, '活动报名筛选状态');
+(104, '报名状态', 'vol_signup_status', '0', 'admin', NOW(), '', NULL, '活动报名筛选状态'),
+(105, '二维码令牌状态', 'vol_qr_token_status', '0', 'admin', NOW(), '', NULL, '活动二维码令牌状态'),
+(106, '签到记录状态', 'vol_checkin_status', '0', 'admin', NOW(), '', NULL, '签到签退记录状态'),
+(107, '服务记录状态', 'vol_service_record_status', '0', 'admin', NOW(), '', NULL, '志愿服务记录状态');
 
 INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, 1, '男', '0', 'sys_user_sex', '', '', 'Y', '0', 'admin', NOW(), '', NULL, '性别男'),
@@ -454,7 +515,17 @@ INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value
 (141, 2, '通过', '1', 'vol_signup_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '通过'),
 (142, 3, '拒绝', '2', 'vol_signup_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '拒绝'),
 (143, 4, '候补', '3', 'vol_signup_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '候补'),
-(144, 5, '取消', '4', 'vol_signup_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '取消');
+(144, 5, '取消', '4', 'vol_signup_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '取消'),
+(150, 1, '有效', '0', 'vol_qr_token_status', '', 'success', 'Y', '0', 'admin', NOW(), '', NULL, '二维码令牌有效'),
+(151, 2, '失效', '1', 'vol_qr_token_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '二维码令牌失效'),
+(155, 1, '已签到', '0', 'vol_checkin_status', '', 'warning', 'Y', '0', 'admin', NOW(), '', NULL, '已签到未签退'),
+(156, 2, '已签退', '1', 'vol_checkin_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '已完成签退'),
+(157, 3, '异常', '2', 'vol_checkin_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '签到签退异常'),
+(158, 4, '人工确认', '3', 'vol_checkin_status', '', 'primary', 'N', '0', 'admin', NOW(), '', NULL, '管理员人工确认'),
+(160, 1, '待确认', '0', 'vol_service_record_status', '', 'warning', 'Y', '0', 'admin', NOW(), '', NULL, '服务记录待确认'),
+(161, 2, '有效', '1', 'vol_service_record_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '有效服务记录'),
+(162, 3, '异常', '2', 'vol_service_record_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '异常服务记录'),
+(163, 4, '作废', '3', 'vol_service_record_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '作废服务记录');
 
 INSERT INTO `sys_post` (`post_id`, `post_code`, `post_name`, `post_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, 'ceo', '平台负责人', 1, '0', 'admin', NOW(), '', NULL, ''),
@@ -579,7 +650,12 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 (2013, '活动编辑', 2010, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:activity:edit', '#', 'admin', NOW(), '', NULL, ''),
 (2020, '报名管理', 2000, 3, 'signup', 'voluntary/signup/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:signup:list', 'form', 'admin', NOW(), '', NULL, '活动报名筛选管理'),
 (2021, '报名查询', 2020, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:query', '#', 'admin', NOW(), '', NULL, ''),
-(2022, '报名筛选', 2020, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:review', '#', 'admin', NOW(), '', NULL, '');
+(2022, '报名筛选', 2020, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:review', '#', 'admin', NOW(), '', NULL, ''),
+(2030, '签到管理', 2000, 4, 'checkin', 'voluntary/checkin/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:checkin:list', 'qrcode', 'admin', NOW(), '', NULL, '活动签到签退记录管理'),
+(2031, '签到查询', 2030, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:checkin:query', '#', 'admin', NOW(), '', NULL, ''),
+(2032, '二维码生成', 2030, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:checkin:qr', '#', 'admin', NOW(), '', NULL, ''),
+(2040, '服务记录', 2000, 5, 'serviceRecord', 'voluntary/serviceRecord/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:serviceRecord:list', 'documentation', 'admin', NOW(), '', NULL, '志愿服务记录管理'),
+(2041, '服务记录查询', 2040, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:serviceRecord:query', '#', 'admin', NOW(), '', NULL, '');
 
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (2, 2000),
@@ -593,7 +669,12 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (2, 2013),
 (2, 2020),
 (2, 2021),
-(2, 2022);
+(2, 2022),
+(2, 2030),
+(2, 2031),
+(2, 2032),
+(2, 2040),
+(2, 2041);
 
 ALTER TABLE `sys_user_role`
   ADD PRIMARY KEY (`user_id`,`role_id`);
@@ -671,14 +752,14 @@ ALTER TABLE `sys_dict_data`
   ADD PRIMARY KEY (`dict_code`);
 
 ALTER TABLE `sys_dict_data`
-  MODIFY `dict_code` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典编码', AUTO_INCREMENT=145;
+  MODIFY `dict_code` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典编码', AUTO_INCREMENT=164;
 
 ALTER TABLE `sys_dict_type`
   ADD PRIMARY KEY (`dict_id`),
   ADD UNIQUE KEY `dict_type` (`dict_type`);
 
 ALTER TABLE `sys_dict_type`
-  MODIFY `dict_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键', AUTO_INCREMENT=105;
+  MODIFY `dict_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键', AUTO_INCREMENT=108;
 
 ALTER TABLE `sys_user_post`
   ADD PRIMARY KEY (`user_id`,`post_id`);
@@ -738,6 +819,33 @@ ALTER TABLE `vol_activity_signup`
 
 ALTER TABLE `vol_activity_signup`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '报名ID', AUTO_INCREMENT=1;
+
+ALTER TABLE `vol_activity_qr_token`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_qr_token` (`token`),
+  ADD KEY `idx_qr_activity_action` (`activity_id`,`action_type`,`status`,`expire_time`);
+
+ALTER TABLE `vol_activity_qr_token`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '二维码令牌ID', AUTO_INCREMENT=1;
+
+ALTER TABLE `vol_checkin_record`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_checkin_activity_user` (`activity_id`,`volunteer_user_id`),
+  ADD KEY `idx_checkin_activity_status` (`activity_id`,`status`,`checkin_time`),
+  ADD KEY `idx_checkin_user` (`volunteer_user_id`,`checkin_time`);
+
+ALTER TABLE `vol_checkin_record`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '签到签退记录ID', AUTO_INCREMENT=1;
+
+ALTER TABLE `vol_service_record`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_service_checkin` (`checkin_record_id`),
+  ADD KEY `idx_service_user_date` (`volunteer_user_id`,`service_date`),
+  ADD KEY `idx_service_activity` (`activity_id`,`status`),
+  ADD KEY `idx_service_status` (`status`,`service_date`);
+
+ALTER TABLE `vol_service_record`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '服务记录ID', AUTO_INCREMENT=1;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
