@@ -164,6 +164,42 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
     }
 
     @Override
+    @Transactional
+    public VolActivitySignup reviewActivitySignup(Long signupId, Integer status, String reviewReason, Long reviewerId,
+            String reviewerName)
+    {
+        validateReviewInput(signupId, status);
+        VolActivitySignup signup = requireSignup(signupId);
+        validateReviewCurrentStatus(signup);
+
+        Integer approvedCountAfterReview = null;
+        if (STATUS_APPROVED.equals(status))
+        {
+            approvedCountAfterReview = calculateApprovedCountAfterReview(signup.getActivityId());
+        }
+
+        VolActivitySignup updateSignup = new VolActivitySignup();
+        updateSignup.setId(signup.getId());
+        updateSignup.setStatus(status);
+        updateSignup.setReviewReason(reviewReason == null ? "" : reviewReason);
+        updateSignup.setReviewerId(reviewerId);
+        updateSignup.setReviewerName(reviewerName);
+        updateSignup.setReviewTime(new Date());
+        updateSignup.setUpdateBy(reviewerName);
+        updateSignup.setUpdateTime(new Date());
+        if (signupMapper.updateVolActivitySignup(updateSignup) <= 0)
+        {
+            throw new ServiceException("报名筛选失败");
+        }
+
+        if (STATUS_APPROVED.equals(status))
+        {
+            updateActivityApprovedCount(signup.getActivityId(), approvedCountAfterReview);
+        }
+        return signupMapper.selectVolActivitySignupById(signup.getId());
+    }
+
+    @Override
     public int deleteVolActivitySignupById(Long id)
     {
         return signupMapper.deleteVolActivitySignupById(id);
@@ -173,6 +209,16 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
     public int deleteVolActivitySignupByIds(Long[] ids)
     {
         return signupMapper.deleteVolActivitySignupByIds(ids);
+    }
+
+    private VolActivitySignup requireSignup(Long signupId)
+    {
+        VolActivitySignup signup = signupMapper.selectVolActivitySignupById(signupId);
+        if (signup == null)
+        {
+            throw new ServiceException("报名记录不存在");
+        }
+        return signup;
     }
 
     private VolVolunteerProfile requireApprovedProfile(Long userId)
@@ -218,6 +264,62 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
             throw new ServiceException("活动报名已截止");
         }
         return activity;
+    }
+
+    private void validateReviewInput(Long signupId, Integer status)
+    {
+        if (signupId == null)
+        {
+            throw new ServiceException("报名ID不能为空");
+        }
+        if (status == null)
+        {
+            throw new ServiceException("筛选状态不能为空");
+        }
+        if (!STATUS_APPROVED.equals(status) && !STATUS_REJECTED.equals(status) && !STATUS_WAITLIST.equals(status))
+        {
+            throw new ServiceException("筛选状态只能为通过、拒绝或候补");
+        }
+    }
+
+    private void validateReviewCurrentStatus(VolActivitySignup signup)
+    {
+        if (STATUS_CANCELLED.equals(signup.getStatus()))
+        {
+            throw new ServiceException("已取消报名不能筛选");
+        }
+        if (STATUS_APPROVED.equals(signup.getStatus()))
+        {
+            throw new ServiceException("已通过报名不能重复筛选");
+        }
+        if (STATUS_REJECTED.equals(signup.getStatus()))
+        {
+            throw new ServiceException("已拒绝报名不能再次筛选");
+        }
+        if (!STATUS_PENDING.equals(signup.getStatus()) && !STATUS_WAITLIST.equals(signup.getStatus()))
+        {
+            throw new ServiceException("只有待筛选或候补报名允许筛选");
+        }
+    }
+
+    private Integer calculateApprovedCountAfterReview(Long activityId)
+    {
+        VolActivity activity = activityMapper.selectVolActivityById(activityId);
+        if (activity == null)
+        {
+            throw new ServiceException("活动不存在");
+        }
+        Integer recruitCount = activity.getRecruitCount();
+        if (recruitCount == null || recruitCount <= 0)
+        {
+            throw new ServiceException("活动招募人数配置异常");
+        }
+        int approvedCount = signupMapper.countApprovedSignupByActivityId(activityId);
+        if (approvedCount >= recruitCount)
+        {
+            throw new ServiceException("活动通过人数已达到招募上限");
+        }
+        return approvedCount + 1;
     }
 
     private VolActivitySignup handleExistingSignup(VolActivitySignup existedSignup, VolVolunteerProfile profile,
@@ -280,5 +382,17 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
         updateActivity.setApprovedCount(Math.max(approvedCount - 1, 0));
         updateActivity.setUpdateTime(new Date());
         activityMapper.updateVolActivity(updateActivity);
+    }
+
+    private void updateActivityApprovedCount(Long activityId, Integer approvedCount)
+    {
+        VolActivity updateActivity = new VolActivity();
+        updateActivity.setId(activityId);
+        updateActivity.setApprovedCount(approvedCount);
+        updateActivity.setUpdateTime(new Date());
+        if (activityMapper.updateVolActivity(updateActivity) <= 0)
+        {
+            throw new ServiceException("活动已通过人数更新失败");
+        }
     }
 }

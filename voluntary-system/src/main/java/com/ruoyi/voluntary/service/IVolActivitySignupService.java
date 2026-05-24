@@ -26,6 +26,9 @@ public interface IVolActivitySignupService
 
     VolActivitySignup cancelMyActivitySignup(Long signupId, Long userId, String username);
 
+    VolActivitySignup reviewActivitySignup(Long signupId, Integer status, String reviewReason, Long reviewerId,
+            String reviewerName);
+
     int deleteVolActivitySignupById(Long id);
 
     int deleteVolActivitySignupByIds(Long[] ids);
