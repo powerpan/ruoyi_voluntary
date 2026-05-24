@@ -27,6 +27,9 @@ user:
     maxRetryCount: 5
     lockTime: 10
 
+voluntary:
+  scan-url-prefix: "${RUOYI_VOLUNTARY_SCAN_URL_PREFIX:http://localhost:8088/#/scan?token=}"
+
 spring:
   messages:
     basename: i18n/messages

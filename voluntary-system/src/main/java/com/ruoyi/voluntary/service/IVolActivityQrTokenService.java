@@ -20,6 +20,11 @@ public interface IVolActivityQrTokenService
 
     int updateVolActivityQrToken(VolActivityQrToken qrToken);
 
+    VolActivityQrToken generateActivityQrToken(Long activityId, String actionType, Integer expireMinutes,
+            String username);
+
+    VolActivityQrToken disableVolActivityQrToken(Long id, String username);
+
     int disableValidTokens(Long activityId, String actionType, String username);
 
     int deleteVolActivityQrTokenById(Long id);

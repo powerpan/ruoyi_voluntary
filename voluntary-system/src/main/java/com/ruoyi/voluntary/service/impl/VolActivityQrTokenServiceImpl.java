@@ -4,8 +4,12 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.uuid.IdUtils;
+import com.ruoyi.voluntary.domain.VolActivity;
 import com.ruoyi.voluntary.domain.VolActivityQrToken;
+import com.ruoyi.voluntary.mapper.VolActivityMapper;
 import com.ruoyi.voluntary.mapper.VolActivityQrTokenMapper;
 import com.ruoyi.voluntary.service.IVolActivityQrTokenService;
 
@@ -23,8 +27,17 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
 
     public static final Integer STATUS_INVALID = 1;
 
+    private static final Integer ACTIVITY_STATUS_PUBLISHED = 1;
+
+    private static final int DEFAULT_EXPIRE_MINUTES = 120;
+
+    private static final int MAX_EXPIRE_MINUTES = 1440;
+
     @Autowired
     private VolActivityQrTokenMapper qrTokenMapper;
+
+    @Autowired
+    private VolActivityMapper activityMapper;
 
     @Override
     public VolActivityQrToken selectVolActivityQrTokenById(Long id)
@@ -74,6 +87,64 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
     }
 
     @Override
+    @Transactional
+    public VolActivityQrToken generateActivityQrToken(Long activityId, String actionType, Integer expireMinutes,
+            String username)
+    {
+        validateActivityForQrToken(activityId);
+        validateActionType(actionType);
+        int safeExpireMinutes = normalizeExpireMinutes(expireMinutes);
+
+        qrTokenMapper.disableValidTokens(activityId, actionType, username);
+
+        VolActivityQrToken qrToken = new VolActivityQrToken();
+        qrToken.setActivityId(activityId);
+        qrToken.setActionType(actionType);
+        qrToken.setToken(IdUtils.fastSimpleUUID());
+        qrToken.setExpireTime(new Date(System.currentTimeMillis() + safeExpireMinutes * 60L * 1000L));
+        qrToken.setStatus(STATUS_VALID);
+        qrToken.setCreateBy(username);
+        qrToken.setCreateTime(new Date());
+        qrToken.setRemark("管理端生成二维码令牌");
+        if (qrTokenMapper.insertVolActivityQrToken(qrToken) <= 0 || qrToken.getId() == null)
+        {
+            throw new ServiceException("二维码令牌生成失败");
+        }
+        return qrTokenMapper.selectVolActivityQrTokenById(qrToken.getId());
+    }
+
+    @Override
+    @Transactional
+    public VolActivityQrToken disableVolActivityQrToken(Long id, String username)
+    {
+        if (id == null)
+        {
+            throw new ServiceException("二维码令牌ID不能为空");
+        }
+        VolActivityQrToken existedToken = qrTokenMapper.selectVolActivityQrTokenById(id);
+        if (existedToken == null)
+        {
+            throw new ServiceException("二维码令牌不存在");
+        }
+        if (STATUS_INVALID.equals(existedToken.getStatus()))
+        {
+            return existedToken;
+        }
+
+        VolActivityQrToken updateToken = new VolActivityQrToken();
+        updateToken.setId(id);
+        updateToken.setStatus(STATUS_INVALID);
+        updateToken.setUpdateBy(username);
+        updateToken.setUpdateTime(new Date());
+        updateToken.setRemark("管理端停用二维码令牌");
+        if (qrTokenMapper.updateVolActivityQrToken(updateToken) <= 0)
+        {
+            throw new ServiceException("二维码令牌停用失败");
+        }
+        return qrTokenMapper.selectVolActivityQrTokenById(id);
+    }
+
+    @Override
     public int disableValidTokens(Long activityId, String actionType, String username)
     {
         if (activityId == null)
@@ -94,6 +165,40 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
     public int deleteVolActivityQrTokenByIds(Long[] ids)
     {
         return qrTokenMapper.deleteVolActivityQrTokenByIds(ids);
+    }
+
+    private void validateActivityForQrToken(Long activityId)
+    {
+        if (activityId == null)
+        {
+            throw new ServiceException("活动ID不能为空");
+        }
+        VolActivity activity = activityMapper.selectVolActivityById(activityId);
+        if (activity == null)
+        {
+            throw new ServiceException("活动不存在");
+        }
+        if (!ACTIVITY_STATUS_PUBLISHED.equals(activity.getStatus()))
+        {
+            throw new ServiceException("只有已发布活动可以生成二维码");
+        }
+    }
+
+    private int normalizeExpireMinutes(Integer expireMinutes)
+    {
+        if (expireMinutes == null)
+        {
+            return DEFAULT_EXPIRE_MINUTES;
+        }
+        if (expireMinutes <= 0)
+        {
+            throw new ServiceException("二维码有效分钟数必须大于0");
+        }
+        if (expireMinutes > MAX_EXPIRE_MINUTES)
+        {
+            throw new ServiceException("二维码有效分钟数不能超过1440");
+        }
+        return expireMinutes;
     }
 
     private void validateQrToken(VolActivityQrToken qrToken)

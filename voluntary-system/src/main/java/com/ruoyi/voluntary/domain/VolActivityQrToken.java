@@ -36,6 +36,9 @@ public class VolActivityQrToken extends BaseEntity
     /** 服务地点，仅用于列表展示 */
     private String serviceLocation;
 
+    /** 扫码地址，仅用于接口返回 */
+    private String scanUrl;
+
     public Long getId()
     {
         return id;
@@ -114,5 +117,15 @@ public class VolActivityQrToken extends BaseEntity
     public void setServiceLocation(String serviceLocation)
     {
         this.serviceLocation = serviceLocation;
+    }
+
+    public String getScanUrl()
+    {
+        return scanUrl;
+    }
+
+    public void setScanUrl(String scanUrl)
+    {
+        this.scanUrl = scanUrl;
     }
 }
