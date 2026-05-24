@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolAuditRecordMapper">
+
+    <resultMap type="VolAuditRecord" id="VolAuditRecordResult">
+        <id property="id" column="id"/>
+        <result property="auditorId" column="auditor_id"/>
+        <result property="auditorName" column="auditor_name"/>
+        <result property="targetType" column="target_type"/>
+        <result property="targetId" column="target_id"/>
+        <result property="targetUserId" column="target_user_id"/>
+        <result property="beforeStatus" column="before_status"/>
+        <result property="auditStatus" column="audit_status"/>
+        <result property="auditReason" column="audit_reason"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectVolAuditRecordVo">
+        select id, auditor_id, auditor_name, target_type, target_id, target_user_id,
+               before_status, audit_status, audit_reason, create_by, create_time, remark
+        from vol_audit_record
+    </sql>
+
+    <select id="selectVolAuditRecordById" parameterType="Long" resultMap="VolAuditRecordResult">
+        <include refid="selectVolAuditRecordVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectVolAuditRecordList" parameterType="VolAuditRecord" resultMap="VolAuditRecordResult">
+        <include refid="selectVolAuditRecordVo"/>
+        <where>
+            <if test="targetType != null and targetType != ''">and target_type = #{targetType}</if>
+            <if test="targetId != null">and target_id = #{targetId}</if>
+            <if test="targetUserId != null">and target_user_id = #{targetUserId}</if>
+            <if test="auditStatus != null and auditStatus != ''">and audit_status = #{auditStatus}</if>
+        </where>
+        order by create_time desc, id desc
+    </select>
+
+    <insert id="insertVolAuditRecord" parameterType="VolAuditRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_audit_record(
+            auditor_id, auditor_name, target_type, target_id, target_user_id,
+            before_status, audit_status, audit_reason, create_by, create_time, remark
+        ) values (
+            #{auditorId}, #{auditorName}, #{targetType}, #{targetId}, #{targetUserId},
+            #{beforeStatus}, #{auditStatus}, #{auditReason}, #{createBy}, #{createTime}, #{remark}
+        )
+    </insert>
+</mapper>

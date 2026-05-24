@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolVolunteerProfileMapper">
+
+    <resultMap type="VolVolunteerProfile" id="VolVolunteerProfileResult">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="realName" column="real_name"/>
+        <result property="gender" column="gender"/>
+        <result property="idCard" column="id_card"/>
+        <result property="phone" column="phone"/>
+        <result property="organization" column="organization"/>
+        <result property="majorOrClass" column="major_or_class"/>
+        <result property="specialty" column="specialty"/>
+        <result property="emergencyContact" column="emergency_contact"/>
+        <result property="emergencyPhone" column="emergency_phone"/>
+        <result property="auditStatus" column="audit_status"/>
+        <result property="auditReason" column="audit_reason"/>
+        <result property="auditorId" column="auditor_id"/>
+        <result property="auditorName" column="auditor_name"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="totalServiceMinutes" column="total_service_minutes"/>
+        <result property="serviceCount" column="service_count"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectVolVolunteerProfileVo">
+        select id, user_id, real_name, gender, id_card, phone, organization, major_or_class,
+               specialty, emergency_contact, emergency_phone, audit_status, audit_reason,
+               auditor_id, auditor_name, audit_time, total_service_minutes, service_count,
+               create_by, create_time, update_by, update_time, remark
+        from vol_volunteer_profile
+    </sql>
+
+    <select id="selectVolVolunteerProfileById" parameterType="Long" resultMap="VolVolunteerProfileResult">
+        <include refid="selectVolVolunteerProfileVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectVolVolunteerProfileByUserId" parameterType="Long" resultMap="VolVolunteerProfileResult">
+        <include refid="selectVolVolunteerProfileVo"/>
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectVolVolunteerProfileList" parameterType="VolVolunteerProfile" resultMap="VolVolunteerProfileResult">
+        <include refid="selectVolVolunteerProfileVo"/>
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="realName != null and realName != ''">and real_name like concat('%', #{realName}, '%')</if>
+            <if test="phone != null and phone != ''">and phone like concat('%', #{phone}, '%')</if>
+            <if test="organization != null and organization != ''">and organization like concat('%', #{organization}, '%')</if>
+            <if test="auditStatus != null">and audit_status = #{auditStatus}</if>
+        </where>
+        order by create_time desc, id desc
+    </select>
+
+    <insert id="insertVolVolunteerProfile" parameterType="VolVolunteerProfile" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_volunteer_profile(
+            user_id, real_name, gender, id_card, phone, organization, major_or_class,
+            specialty, emergency_contact, emergency_phone, audit_status, audit_reason,
+            auditor_id, auditor_name, audit_time, total_service_minutes, service_count,
+            create_by, create_time, update_by, update_time, remark
+        ) values (
+            #{userId}, #{realName}, #{gender}, #{idCard}, #{phone}, #{organization}, #{majorOrClass},
+            #{specialty}, #{emergencyContact}, #{emergencyPhone}, #{auditStatus}, #{auditReason},
+            #{auditorId}, #{auditorName}, #{auditTime}, #{totalServiceMinutes}, #{serviceCount},
+            #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="updateVolVolunteerProfile" parameterType="VolVolunteerProfile">
+        update vol_volunteer_profile
+        <set>
+            <if test="realName != null">real_name = #{realName},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="idCard != null">id_card = #{idCard},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="organization != null">organization = #{organization},</if>
+            <if test="majorOrClass != null">major_or_class = #{majorOrClass},</if>
+            <if test="specialty != null">specialty = #{specialty},</if>
+            <if test="emergencyContact != null">emergency_contact = #{emergencyContact},</if>
+            <if test="emergencyPhone != null">emergency_phone = #{emergencyPhone},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="auditReason != null">audit_reason = #{auditReason},</if>
+            <if test="auditorId != null">auditor_id = #{auditorId},</if>
+            <if test="auditorName != null">auditor_name = #{auditorName},</if>
+            <if test="auditTime != null">audit_time = #{auditTime},</if>
+            <if test="totalServiceMinutes != null">total_service_minutes = #{totalServiceMinutes},</if>
+            <if test="serviceCount != null">service_count = #{serviceCount},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>
