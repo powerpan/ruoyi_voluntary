@@ -117,6 +117,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where id = #{id}
     </update>
 
+    <update id="resubmitCancelledSignup" parameterType="VolActivitySignup">
+        update vol_activity_signup
+        set real_name = #{realName},
+            phone = #{phone},
+            organization = #{organization},
+            apply_reason = #{applyReason},
+            experience = #{experience},
+            status = #{status},
+            review_reason = '',
+            reviewer_id = null,
+            reviewer_name = '',
+            review_time = null,
+            create_by = #{createBy},
+            create_time = #{createTime},
+            update_by = #{updateBy},
+            update_time = #{updateTime},
+            remark = #{remark}
+        where id = #{id}
+          and status = 4
+    </update>
+
     <delete id="deleteVolActivitySignupById" parameterType="Long">
         delete from vol_activity_signup where id = #{id}
     </delete>

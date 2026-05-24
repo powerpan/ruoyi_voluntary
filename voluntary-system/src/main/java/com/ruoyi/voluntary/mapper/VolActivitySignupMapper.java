@@ -22,6 +22,8 @@ public interface VolActivitySignupMapper
 
     int updateVolActivitySignup(VolActivitySignup signup);
 
+    int resubmitCancelledSignup(VolActivitySignup signup);
+
     int deleteVolActivitySignupById(Long id);
 
     int deleteVolActivitySignupByIds(Long[] ids);

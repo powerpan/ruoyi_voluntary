@@ -14,11 +14,17 @@ public interface IVolActivitySignupService
 
     List<VolActivitySignup> selectVolActivitySignupList(VolActivitySignup signup);
 
+    List<VolActivitySignup> selectMyActivitySignupList(Long userId, VolActivitySignup signup);
+
     int countApprovedSignupByActivityId(Long activityId);
 
     int insertVolActivitySignup(VolActivitySignup signup);
 
     int updateVolActivitySignup(VolActivitySignup signup);
+
+    VolActivitySignup applyForActivity(Long activityId, Long userId, String username, String applyReason, String experience);
+
+    VolActivitySignup cancelMyActivitySignup(Long signupId, Long userId, String username);
 
     int deleteVolActivitySignupById(Long id);
 

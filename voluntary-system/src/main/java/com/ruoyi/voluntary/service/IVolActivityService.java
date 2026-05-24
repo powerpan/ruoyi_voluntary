@@ -10,6 +10,8 @@ public interface IVolActivityService
 {
     VolActivity selectVolActivityById(Long id);
 
+    VolActivity selectPublishedVolActivityById(Long id);
+
     List<VolActivity> selectVolActivityList(VolActivity activity);
 
     int insertVolActivity(VolActivity activity);

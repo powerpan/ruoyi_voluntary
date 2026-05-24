@@ -37,6 +37,17 @@ public class VolActivityServiceImpl implements IVolActivityService
     }
 
     @Override
+    public VolActivity selectPublishedVolActivityById(Long id)
+    {
+        VolActivity activity = requireActivity(id);
+        if (!STATUS_PUBLISHED.equals(activity.getStatus()))
+        {
+            throw new ServiceException("活动不存在或未发布");
+        }
+        return activity;
+    }
+
+    @Override
     public List<VolActivity> selectVolActivityList(VolActivity activity)
     {
         return activityMapper.selectVolActivityList(activity == null ? new VolActivity() : activity);
