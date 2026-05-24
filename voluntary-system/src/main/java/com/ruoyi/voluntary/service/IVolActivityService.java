@@ -16,6 +16,12 @@ public interface IVolActivityService
 
     int updateVolActivity(VolActivity activity);
 
+    VolActivity createVolActivityByManager(String username, VolActivity activity);
+
+    VolActivity updateVolActivityByManager(Long id, String username, VolActivity activity);
+
+    VolActivity changeVolActivityStatus(Long id, Integer status, String reason, String username);
+
     int deleteVolActivityById(Long id);
 
     int deleteVolActivityByIds(Long[] ids);
