@@ -18,9 +18,10 @@ export function updateVolunteerProfile(data) {
 }
 
 // 查询当前登录用户的志愿者审核状态
-export function getVolunteerAuditStatus() {
+export function getVolunteerAuditStatus(config = {}) {
   return request({
     url: '/app/voluntary/profile/audit-status',
-    method: 'get'
+    method: 'get',
+    ...config
   })
 }
