@@ -66,6 +66,18 @@ public class VolVolunteerProfile extends BaseEntity
     /** 有效服务次数 */
     private Integer serviceCount;
 
+    /** 账号名称，仅用于管理端展示 */
+    private String userName;
+
+    /** 用户昵称，仅用于管理端展示 */
+    private String nickName;
+
+    /** 用户邮箱，仅用于管理端展示 */
+    private String email;
+
+    /** 账号状态，仅用于管理端展示 */
+    private String userStatus;
+
     public Long getId()
     {
         return id;
@@ -244,5 +256,45 @@ public class VolVolunteerProfile extends BaseEntity
     public void setServiceCount(Integer serviceCount)
     {
         this.serviceCount = serviceCount;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
+    }
+
+    public String getNickName()
+    {
+        return nickName;
+    }
+
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+    public String getEmail()
+    {
+        return email;
+    }
+
+    public void setEmail(String email)
+    {
+        this.email = email;
+    }
+
+    public String getUserStatus()
+    {
+        return userStatus;
+    }
+
+    public void setUserStatus(String userStatus)
+    {
+        this.userStatus = userStatus;
     }
 }

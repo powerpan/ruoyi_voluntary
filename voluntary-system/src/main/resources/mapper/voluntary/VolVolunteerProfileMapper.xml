@@ -28,37 +28,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateBy" column="update_by"/>
         <result property="updateTime" column="update_time"/>
         <result property="remark" column="remark"/>
+        <result property="userName" column="user_name"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="email" column="email"/>
+        <result property="userStatus" column="user_status"/>
     </resultMap>
 
     <sql id="selectVolVolunteerProfileVo">
-        select id, user_id, real_name, gender, id_card, phone, organization, major_or_class,
-               specialty, emergency_contact, emergency_phone, audit_status, audit_reason,
-               auditor_id, auditor_name, audit_time, total_service_minutes, service_count,
-               create_by, create_time, update_by, update_time, remark
-        from vol_volunteer_profile
+        select p.id, p.user_id, p.real_name, p.gender, p.id_card, p.phone, p.organization, p.major_or_class,
+               p.specialty, p.emergency_contact, p.emergency_phone, p.audit_status, p.audit_reason,
+               p.auditor_id, p.auditor_name, p.audit_time, p.total_service_minutes, p.service_count,
+               p.create_by, p.create_time, p.update_by, p.update_time, p.remark,
+               u.user_name, u.nick_name, u.email, u.status as user_status
+        from vol_volunteer_profile p
+        left join sys_user u on u.user_id = p.user_id
     </sql>
 
     <select id="selectVolVolunteerProfileById" parameterType="Long" resultMap="VolVolunteerProfileResult">
         <include refid="selectVolVolunteerProfileVo"/>
-        where id = #{id}
+        where p.id = #{id}
     </select>
 
     <select id="selectVolVolunteerProfileByUserId" parameterType="Long" resultMap="VolVolunteerProfileResult">
         <include refid="selectVolVolunteerProfileVo"/>
-        where user_id = #{userId}
+        where p.user_id = #{userId}
         limit 1
     </select>
 
     <select id="selectVolVolunteerProfileList" parameterType="VolVolunteerProfile" resultMap="VolVolunteerProfileResult">
         <include refid="selectVolVolunteerProfileVo"/>
         <where>
-            <if test="userId != null">and user_id = #{userId}</if>
-            <if test="realName != null and realName != ''">and real_name like concat('%', #{realName}, '%')</if>
-            <if test="phone != null and phone != ''">and phone like concat('%', #{phone}, '%')</if>
-            <if test="organization != null and organization != ''">and organization like concat('%', #{organization}, '%')</if>
-            <if test="auditStatus != null">and audit_status = #{auditStatus}</if>
+            <if test="userId != null">and p.user_id = #{userId}</if>
+            <if test="realName != null and realName != ''">and p.real_name like concat('%', #{realName}, '%')</if>
+            <if test="phone != null and phone != ''">and p.phone like concat('%', #{phone}, '%')</if>
+            <if test="organization != null and organization != ''">and p.organization like concat('%', #{organization}, '%')</if>
+            <if test="auditStatus != null">and p.audit_status = #{auditStatus}</if>
+            <if test="userName != null and userName != ''">and u.user_name like concat('%', #{userName}, '%')</if>
         </where>
-        order by create_time desc, id desc
+        order by p.create_time desc, p.id desc
     </select>
 
     <insert id="insertVolVolunteerProfile" parameterType="VolVolunteerProfile" useGeneratedKeys="true" keyProperty="id">

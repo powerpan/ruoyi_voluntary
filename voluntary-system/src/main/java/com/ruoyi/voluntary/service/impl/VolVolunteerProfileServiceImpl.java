@@ -43,6 +43,12 @@ public class VolVolunteerProfileServiceImpl implements IVolVolunteerProfileServi
 
     private static final String PROFILE_UPDATE_AUDIT_REASON = "志愿者修改资料后进入待审核状态";
 
+    private static final String MANAGER_APPROVE_REASON = "管理员审核通过";
+
+    private static final String MANAGER_DISABLE_REASON = "管理员禁用志愿者档案";
+
+    private static final String MANAGER_ENABLE_REASON = "管理员启用志愿者档案";
+
     @Autowired
     private VolVolunteerProfileMapper volunteerProfileMapper;
 
@@ -117,6 +123,62 @@ public class VolVolunteerProfileServiceImpl implements IVolVolunteerProfileServi
             }
         }
         return volunteerProfileMapper.selectVolVolunteerProfileByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public VolVolunteerProfile updateVolunteerProfileByManager(Long profileId, String username, VolVolunteerProfile profile)
+    {
+        VolVolunteerProfile existedProfile = requireProfile(profileId);
+        VolVolunteerProfile updateProfile = buildManagerUpdateProfile(existedProfile, profile, username);
+        if (volunteerProfileMapper.updateVolVolunteerProfile(updateProfile) <= 0)
+        {
+            throw new ServiceException("志愿者档案修改失败");
+        }
+        return volunteerProfileMapper.selectVolVolunteerProfileById(profileId);
+    }
+
+    @Override
+    @Transactional
+    public VolVolunteerProfile auditVolunteerProfile(Long profileId, Integer auditStatus, String auditReason, Long auditorId,
+            String auditorName)
+    {
+        if (!AUDIT_STATUS_APPROVED.equals(auditStatus) && !AUDIT_STATUS_REJECTED.equals(auditStatus))
+        {
+            throw new ServiceException("审核状态只能为通过或驳回");
+        }
+        if (AUDIT_STATUS_REJECTED.equals(auditStatus) && StringUtils.isBlank(auditReason))
+        {
+            throw new ServiceException("驳回时必须填写审核意见");
+        }
+        return updateAuditStatus(profileId, auditStatus,
+                StringUtils.isBlank(auditReason) ? MANAGER_APPROVE_REASON : auditReason,
+                auditorId, auditorName);
+    }
+
+    @Override
+    @Transactional
+    public VolVolunteerProfile changeVolunteerProfileStatus(Long profileId, Integer auditStatus, String auditReason,
+            Long auditorId, String auditorName)
+    {
+        if (!AUDIT_STATUS_APPROVED.equals(auditStatus) && !AUDIT_STATUS_DISABLED.equals(auditStatus))
+        {
+            throw new ServiceException("状态只能设置为启用或禁用");
+        }
+        String defaultReason = AUDIT_STATUS_DISABLED.equals(auditStatus) ? MANAGER_DISABLE_REASON : MANAGER_ENABLE_REASON;
+        return updateAuditStatus(profileId, auditStatus,
+                StringUtils.isBlank(auditReason) ? defaultReason : auditReason,
+                auditorId, auditorName);
+    }
+
+    @Override
+    public List<VolAuditRecord> selectVolunteerAuditRecords(Long profileId)
+    {
+        VolVolunteerProfile profile = requireProfile(profileId);
+        VolAuditRecord query = new VolAuditRecord();
+        query.setTargetType(TARGET_TYPE_VOLUNTEER);
+        query.setTargetId(profile.getId());
+        return auditRecordMapper.selectVolAuditRecordList(query);
     }
 
     @Override
@@ -218,6 +280,73 @@ public class VolVolunteerProfileServiceImpl implements IVolVolunteerProfileServi
         return updateProfile;
     }
 
+    private VolVolunteerProfile buildManagerUpdateProfile(VolVolunteerProfile existedProfile, VolVolunteerProfile input, String username)
+    {
+        VolVolunteerProfile updateProfile = new VolVolunteerProfile();
+        updateProfile.setId(existedProfile.getId());
+        updateProfile.setUserId(existedProfile.getUserId());
+        updateProfile.setRealName(input.getRealName());
+        updateProfile.setGender(input.getGender());
+        updateProfile.setIdCard(input.getIdCard());
+        updateProfile.setPhone(input.getPhone());
+        updateProfile.setOrganization(input.getOrganization());
+        updateProfile.setMajorOrClass(input.getMajorOrClass());
+        updateProfile.setSpecialty(input.getSpecialty());
+        updateProfile.setEmergencyContact(input.getEmergencyContact());
+        updateProfile.setEmergencyPhone(input.getEmergencyPhone());
+        updateProfile.setRemark(input.getRemark());
+        updateProfile.setUpdateBy(username);
+        updateProfile.setUpdateTime(new Date());
+        return updateProfile;
+    }
+
+    private VolVolunteerProfile updateAuditStatus(Long profileId, Integer auditStatus, String auditReason, Long auditorId,
+            String auditorName)
+    {
+        VolVolunteerProfile existedProfile = requireProfile(profileId);
+        if (Objects.equals(existedProfile.getAuditStatus(), auditStatus)
+                && Objects.equals(StringUtils.defaultString(existedProfile.getAuditReason()), StringUtils.defaultString(auditReason)))
+        {
+            return existedProfile;
+        }
+
+        VolVolunteerProfile updateProfile = new VolVolunteerProfile();
+        updateProfile.setId(existedProfile.getId());
+        updateProfile.setAuditStatus(auditStatus);
+        updateProfile.setAuditReason(auditReason);
+        updateProfile.setAuditorId(auditorId);
+        updateProfile.setAuditorName(auditorName);
+        updateProfile.setAuditTime(new Date());
+        updateProfile.setUpdateBy(auditorName);
+        updateProfile.setUpdateTime(new Date());
+
+        if (volunteerProfileMapper.updateVolVolunteerProfile(updateProfile) <= 0)
+        {
+            throw new ServiceException("志愿者审核状态修改失败");
+        }
+
+        VolAuditRecord auditRecord = buildManagerAuditRecord(existedProfile, auditStatus, auditReason, auditorId, auditorName);
+        if (auditRecordMapper.insertVolAuditRecord(auditRecord) <= 0)
+        {
+            throw new ServiceException("志愿者审核记录创建失败");
+        }
+        return volunteerProfileMapper.selectVolVolunteerProfileById(profileId);
+    }
+
+    private VolVolunteerProfile requireProfile(Long profileId)
+    {
+        if (profileId == null)
+        {
+            throw new ServiceException("志愿者档案ID不能为空");
+        }
+        VolVolunteerProfile profile = volunteerProfileMapper.selectVolVolunteerProfileById(profileId);
+        if (profile == null)
+        {
+            throw new ServiceException("志愿者档案不存在");
+        }
+        return profile;
+    }
+
     private boolean shouldResetToPending(VolVolunteerProfile existedProfile, VolVolunteerProfile input)
     {
         if (AUDIT_STATUS_REJECTED.equals(existedProfile.getAuditStatus()))
@@ -268,6 +397,23 @@ public class VolVolunteerProfileServiceImpl implements IVolVolunteerProfileServi
         auditRecord.setAuditStatus(String.valueOf(AUDIT_STATUS_PENDING));
         auditRecord.setAuditReason(PROFILE_UPDATE_AUDIT_REASON);
         auditRecord.setCreateBy(username);
+        auditRecord.setCreateTime(new Date());
+        return auditRecord;
+    }
+
+    private VolAuditRecord buildManagerAuditRecord(VolVolunteerProfile existedProfile, Integer auditStatus, String auditReason,
+            Long auditorId, String auditorName)
+    {
+        VolAuditRecord auditRecord = new VolAuditRecord();
+        auditRecord.setAuditorId(auditorId);
+        auditRecord.setAuditorName(auditorName);
+        auditRecord.setTargetType(TARGET_TYPE_VOLUNTEER);
+        auditRecord.setTargetId(existedProfile.getId());
+        auditRecord.setTargetUserId(existedProfile.getUserId());
+        auditRecord.setBeforeStatus(String.valueOf(existedProfile.getAuditStatus()));
+        auditRecord.setAuditStatus(String.valueOf(auditStatus));
+        auditRecord.setAuditReason(auditReason);
+        auditRecord.setCreateBy(auditorName);
         auditRecord.setCreateTime(new Date());
         return auditRecord;
     }
