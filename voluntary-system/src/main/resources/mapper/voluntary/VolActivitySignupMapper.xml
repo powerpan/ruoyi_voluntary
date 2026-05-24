@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolActivitySignupMapper">
+
+    <resultMap type="VolActivitySignup" id="VolActivitySignupResult">
+        <id property="id" column="id"/>
+        <result property="activityId" column="activity_id"/>
+        <result property="volunteerUserId" column="volunteer_user_id"/>
+        <result property="realName" column="real_name"/>
+        <result property="phone" column="phone"/>
+        <result property="organization" column="organization"/>
+        <result property="applyReason" column="apply_reason"/>
+        <result property="experience" column="experience"/>
+        <result property="status" column="status"/>
+        <result property="reviewReason" column="review_reason"/>
+        <result property="reviewerId" column="reviewer_id"/>
+        <result property="reviewerName" column="reviewer_name"/>
+        <result property="reviewTime" column="review_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="activityTitle" column="activity_title"/>
+        <result property="activityType" column="activity_type"/>
+        <result property="serviceLocation" column="service_location"/>
+        <result property="activityStartTime" column="activity_start_time"/>
+        <result property="activityEndTime" column="activity_end_time"/>
+        <result property="activityStatus" column="activity_status"/>
+    </resultMap>
+
+    <sql id="selectVolActivitySignupVo">
+        select s.id, s.activity_id, s.volunteer_user_id, s.real_name, s.phone, s.organization,
+               s.apply_reason, s.experience, s.status, s.review_reason, s.reviewer_id,
+               s.reviewer_name, s.review_time, s.create_by, s.create_time, s.update_by,
+               s.update_time, s.remark,
+               a.title as activity_title, a.activity_type, a.service_location,
+               a.start_time as activity_start_time, a.end_time as activity_end_time,
+               a.status as activity_status
+        from vol_activity_signup s
+        left join vol_activity a on a.id = s.activity_id
+    </sql>
+
+    <select id="selectVolActivitySignupById" parameterType="Long" resultMap="VolActivitySignupResult">
+        <include refid="selectVolActivitySignupVo"/>
+        where s.id = #{id}
+    </select>
+
+    <select id="selectVolActivitySignupByActivityIdAndVolunteerUserId" resultMap="VolActivitySignupResult">
+        <include refid="selectVolActivitySignupVo"/>
+        where s.activity_id = #{activityId}
+          and s.volunteer_user_id = #{volunteerUserId}
+        limit 1
+    </select>
+
+    <select id="selectVolActivitySignupList" parameterType="VolActivitySignup" resultMap="VolActivitySignupResult">
+        <include refid="selectVolActivitySignupVo"/>
+        <where>
+            <if test="activityId != null">and s.activity_id = #{activityId}</if>
+            <if test="volunteerUserId != null">and s.volunteer_user_id = #{volunteerUserId}</if>
+            <if test="realName != null and realName != ''">and s.real_name like concat('%', #{realName}, '%')</if>
+            <if test="phone != null and phone != ''">and s.phone like concat('%', #{phone}, '%')</if>
+            <if test="organization != null and organization != ''">and s.organization like concat('%', #{organization}, '%')</if>
+            <if test="status != null">and s.status = #{status}</if>
+            <if test="activityTitle != null and activityTitle != ''">and a.title like concat('%', #{activityTitle}, '%')</if>
+            <if test="activityType != null and activityType != ''">and a.activity_type = #{activityType}</if>
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                and s.create_time &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                and s.create_time &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by s.create_time desc, s.id desc
+    </select>
+
+    <select id="countApprovedSignupByActivityId" parameterType="Long" resultType="int">
+        select count(1)
+        from vol_activity_signup
+        where activity_id = #{activityId}
+          and status = 1
+    </select>
+
+    <insert id="insertVolActivitySignup" parameterType="VolActivitySignup" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_activity_signup(
+            activity_id, volunteer_user_id, real_name, phone, organization, apply_reason,
+            experience, status, review_reason, reviewer_id, reviewer_name, review_time,
+            create_by, create_time, update_by, update_time, remark
+        ) values (
+            #{activityId}, #{volunteerUserId}, #{realName}, #{phone}, #{organization}, #{applyReason},
+            #{experience}, #{status}, #{reviewReason}, #{reviewerId}, #{reviewerName}, #{reviewTime},
+            #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="updateVolActivitySignup" parameterType="VolActivitySignup">
+        update vol_activity_signup
+        <set>
+            <if test="activityId != null">activity_id = #{activityId},</if>
+            <if test="volunteerUserId != null">volunteer_user_id = #{volunteerUserId},</if>
+            <if test="realName != null">real_name = #{realName},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="organization != null">organization = #{organization},</if>
+            <if test="applyReason != null">apply_reason = #{applyReason},</if>
+            <if test="experience != null">experience = #{experience},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="reviewReason != null">review_reason = #{reviewReason},</if>
+            <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+            <if test="reviewerName != null">reviewer_name = #{reviewerName},</if>
+            <if test="reviewTime != null">review_time = #{reviewTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVolActivitySignupById" parameterType="Long">
+        delete from vol_activity_signup where id = #{id}
+    </delete>
+
+    <delete id="deleteVolActivitySignupByIds" parameterType="Long">
+        delete from vol_activity_signup where id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

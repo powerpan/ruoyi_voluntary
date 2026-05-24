@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolActivityMapper">
+
+    <resultMap type="VolActivity" id="VolActivityResult">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="activityType" column="activity_type"/>
+        <result property="coverUrl" column="cover_url"/>
+        <result property="serviceLocation" column="service_location"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="signupStartTime" column="signup_start_time"/>
+        <result property="signupEndTime" column="signup_end_time"/>
+        <result property="recruitCount" column="recruit_count"/>
+        <result property="approvedCount" column="approved_count"/>
+        <result property="serviceTarget" column="service_target"/>
+        <result property="content" column="content"/>
+        <result property="requirements" column="requirements"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerPhone" column="manager_phone"/>
+        <result property="maxServiceMinutes" column="max_service_minutes"/>
+        <result property="status" column="status"/>
+        <result property="publishTime" column="publish_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectVolActivityVo">
+        select id, title, activity_type, cover_url, service_location, start_time, end_time,
+               signup_start_time, signup_end_time, recruit_count, approved_count, service_target,
+               content, requirements, manager_name, manager_phone, max_service_minutes, status,
+               publish_time, create_by, create_time, update_by, update_time, remark
+        from vol_activity
+    </sql>
+
+    <select id="selectVolActivityById" parameterType="Long" resultMap="VolActivityResult">
+        <include refid="selectVolActivityVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectVolActivityList" parameterType="VolActivity" resultMap="VolActivityResult">
+        <include refid="selectVolActivityVo"/>
+        <where>
+            <if test="title != null and title != ''">and title like concat('%', #{title}, '%')</if>
+            <if test="keyword != null and keyword != ''">
+                and (title like concat('%', #{keyword}, '%') or service_location like concat('%', #{keyword}, '%'))
+            </if>
+            <if test="activityType != null and activityType != ''">and activity_type = #{activityType}</if>
+            <if test="serviceLocation != null and serviceLocation != ''">and service_location like concat('%', #{serviceLocation}, '%')</if>
+            <if test="status != null">and status = #{status}</if>
+            <if test="signupOpen != null and signupOpen == true">
+                and signup_start_time &lt;= now() and signup_end_time &gt;= now()
+            </if>
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                and start_time &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                and start_time &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by start_time desc, id desc
+    </select>
+
+    <insert id="insertVolActivity" parameterType="VolActivity" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_activity(
+            title, activity_type, cover_url, service_location, start_time, end_time,
+            signup_start_time, signup_end_time, recruit_count, approved_count, service_target,
+            content, requirements, manager_name, manager_phone, max_service_minutes, status,
+            publish_time, create_by, create_time, update_by, update_time, remark
+        ) values (
+            #{title}, #{activityType}, #{coverUrl}, #{serviceLocation}, #{startTime}, #{endTime},
+            #{signupStartTime}, #{signupEndTime}, #{recruitCount}, #{approvedCount}, #{serviceTarget},
+            #{content}, #{requirements}, #{managerName}, #{managerPhone}, #{maxServiceMinutes}, #{status},
+            #{publishTime}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="updateVolActivity" parameterType="VolActivity">
+        update vol_activity
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="activityType != null">activity_type = #{activityType},</if>
+            <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+            <if test="serviceLocation != null">service_location = #{serviceLocation},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="signupStartTime != null">signup_start_time = #{signupStartTime},</if>
+            <if test="signupEndTime != null">signup_end_time = #{signupEndTime},</if>
+            <if test="recruitCount != null">recruit_count = #{recruitCount},</if>
+            <if test="approvedCount != null">approved_count = #{approvedCount},</if>
+            <if test="serviceTarget != null">service_target = #{serviceTarget},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="requirements != null">requirements = #{requirements},</if>
+            <if test="managerName != null">manager_name = #{managerName},</if>
+            <if test="managerPhone != null">manager_phone = #{managerPhone},</if>
+            <if test="maxServiceMinutes != null">max_service_minutes = #{maxServiceMinutes},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="publishTime != null">publish_time = #{publishTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteVolActivityById" parameterType="Long">
+        delete from vol_activity where id = #{id}
+    </delete>
+
+    <delete id="deleteVolActivityByIds" parameterType="Long">
+        delete from vol_activity where id in
+        <foreach collection="array" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
