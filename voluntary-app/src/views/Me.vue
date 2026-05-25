@@ -15,6 +15,7 @@
         </div>
       </div>
       <div class="hero-actions">
+        <el-button type="success" icon="el-icon-camera" @click="$router.push('/scan')">扫码签到</el-button>
         <el-button type="primary" icon="el-icon-document" @click="$router.push('/signups')">我的报名</el-button>
         <el-button icon="el-icon-time" @click="$router.push('/service-records')">服务记录</el-button>
       </div>

@@ -193,7 +193,7 @@
       </el-form>
 
       <div class="qr-dialog-actions">
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="submitQr">生成二维码地址</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="mini" @click="submitQr">生成二维码</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="loadQrTokens">刷新</el-button>
       </div>
 
@@ -205,8 +205,15 @@
         show-icon
       >
         <template slot="title">
-          <span>{{ actionLabel(generatedToken.actionType) }}地址已生成</span>
+          <span>{{ actionLabel(generatedToken.actionType) }}二维码已生成</span>
         </template>
+        <div class="qr-preview-block">
+          <img :src="qrDataUrl(generatedToken.scanUrl)" class="qr-preview-img" alt="二维码" />
+          <div class="qr-preview-copy">
+            <strong>现场扫码使用</strong>
+            <p>志愿者登录用户端后扫描该二维码，进入签到或签退确认页。</p>
+          </div>
+        </div>
         <div class="qr-url-row">
           <el-input :value="generatedToken.scanUrl" readonly size="small" />
           <el-button
@@ -223,6 +230,18 @@
         <el-table-column label="类型" prop="actionType" width="90" align="center">
           <template slot-scope="scope">
             <span>{{ actionLabel(scope.row.actionType) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="二维码" width="100" align="center">
+          <template slot-scope="scope">
+            <el-popover v-if="scope.row.scanUrl" placement="right" width="250" trigger="hover">
+              <div class="qr-popover">
+                <img :src="qrDataUrl(scope.row.scanUrl)" class="qr-popover-img" alt="二维码" />
+                <p>{{ actionLabel(scope.row.actionType) }}二维码</p>
+              </div>
+              <img slot="reference" :src="qrDataUrl(scope.row.scanUrl)" class="qr-table-thumb" alt="二维码" />
+            </el-popover>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column label="扫码地址" prop="scanUrl" min-width="260" :show-overflow-tooltip="true" />
@@ -287,6 +306,7 @@
 <script>
 import { listActivity } from '@/api/voluntary/activity'
 import { disableQrToken, generateQrToken, getCheckin, listCheckin, listQrToken } from '@/api/voluntary/checkin'
+import { Ecc, QrCode } from '@rc-component/qrcode/lib/libs/qrcodegen'
 
 export default {
   name: 'VoluntaryCheckin',
@@ -428,6 +448,39 @@ export default {
       }
       return value || '-'
     },
+    qrDataUrl(value) {
+      if (!value) {
+        return ''
+      }
+      const qrCode = QrCode.encodeText(String(value), Ecc.MEDIUM)
+      const modules = qrCode.getModules()
+      const margin = 4
+      const size = modules.length + margin * 2
+      const path = []
+
+      modules.forEach((row, y) => {
+        let start = null
+        row.forEach((cell, x) => {
+          if (cell && start === null) {
+            start = x
+          }
+          const isEnd = x === row.length - 1
+          if ((!cell || isEnd) && start !== null) {
+            const end = cell && isEnd ? x + 1 : x
+            path.push(`M${start + margin} ${y + margin}h${end - start}v1H${start + margin}z`)
+            start = null
+          }
+        })
+      })
+
+      const svg = [
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">`,
+        '<rect width="100%" height="100%" fill="#fff"/>',
+        `<path d="${path.join('')}" fill="#17211f"/>`,
+        '</svg>'
+      ].join('')
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    },
     formatRange(start, end) {
       const startText = this.parseTime(start) || '-'
       const endText = this.parseTime(end) || '-'
@@ -471,5 +524,49 @@ export default {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   margin-top: 8px;
+}
+
+.qr-preview-block {
+  display: grid;
+  grid-template-columns: 156px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.qr-preview-img,
+.qr-popover-img {
+  width: 156px;
+  height: 156px;
+  border: 1px solid #dfe8e4;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+}
+
+.qr-preview-copy strong {
+  color: #17211f;
+  font-size: 15px;
+}
+
+.qr-preview-copy p,
+.qr-popover p {
+  margin: 8px 0 0;
+  color: #63716d;
+  line-height: 1.6;
+}
+
+.qr-popover {
+  text-align: center;
+}
+
+.qr-table-thumb {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #dfe8e4;
+  border-radius: 4px;
+  background: #fff;
+  padding: 3px;
+  cursor: zoom-in;
 }
 </style>
