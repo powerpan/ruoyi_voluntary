@@ -11,6 +11,7 @@
       <router-link to="/"><i class="el-icon-s-home"></i>首页</router-link>
       <router-link to="/activities"><i class="el-icon-guide"></i>活动浏览</router-link>
       <router-link v-if="token" to="/signups"><i class="el-icon-s-management"></i>我的报名</router-link>
+      <router-link v-if="token" to="/scan"><i class="el-icon-camera"></i>扫码签到</router-link>
       <router-link v-if="token" to="/service-records"><i class="el-icon-time"></i>服务记录</router-link>
       <router-link to="/me"><i class="el-icon-user"></i>我的</router-link>
     </nav>

@@ -5,8 +5,8 @@
         <p class="eyebrow">RuoYi Voluntary</p>
         <h1>志愿活动管理系统</h1>
         <p>
-          当前已推进到 P3 活动与报名阶段。志愿者可浏览已发布活动、提交报名申请，
-          管理员可在后台发布活动并筛选报名人员。
+          当前已推进到 P4 签到签退与服务记录阶段。志愿者可浏览活动、报名参与，
+          并通过二维码完成现场签到签退和服务时长记录。
         </p>
         <div class="hero-actions">
           <el-button type="primary" icon="el-icon-guide" @click="$router.push('/activities')">活动浏览</el-button>
@@ -55,7 +55,7 @@
     <section class="stage-section">
       <div class="stage-title">
         <h2>分阶段推进</h2>
-        <p>当前已进入活动发布、浏览、报名和筛选闭环，签到签退与统计仍按后续阶段推进。</p>
+        <p>当前已接入二维码签到签退和个人服务记录，后续继续做 P4 闭环验收和统计扩展。</p>
       </div>
       <div class="stage-grid">
         <div v-for="item in stages" :key="item.name" class="stage-card">
@@ -116,7 +116,7 @@ export default {
         { name: 'P1', title: '工程骨架', desc: '迁移 RuoYi 基础结构，完成编译、构建和三端启动验证。' },
         { name: 'P2', title: '志愿者档案', desc: '实现注册、资料维护、审核状态展示和管理员审核。' },
         { name: 'P3', title: '活动报名', desc: '接入活动浏览、活动详情、报名申请和我的报名。' },
-        { name: 'P4', title: '签到时长', desc: '实现二维码签到签退和服务记录统计。' }
+        { name: 'P4', title: '签到时长', desc: '接入二维码签到签退、服务记录和个人时长汇总。' }
       ]
     }
   },

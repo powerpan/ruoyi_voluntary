@@ -21,6 +21,7 @@ const routes = [
       { path: 'activities', name: 'Activities', component: () => import('@/views/Activities') },
       { path: 'activities/:id', name: 'ActivityDetail', component: () => import('@/views/ActivityDetail') },
       { path: 'signups', name: 'Signups', component: () => import('@/views/Signups'), meta: { auth: true } },
+      { path: 'scan', name: 'Scan', component: () => import('@/views/Scan'), meta: { auth: true } },
       { path: 'service-records', name: 'ServiceRecords', component: () => import('@/views/ServiceRecords'), meta: { auth: true } },
       { path: 'notifications', name: 'Notifications', component: () => import('@/views/Notifications'), meta: { auth: true } },
       { path: 'me', name: 'Me', component: () => import('@/views/Me'), meta: { auth: true } },
