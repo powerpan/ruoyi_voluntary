@@ -16,6 +16,7 @@ import com.ruoyi.voluntary.mapper.VolActivityQrTokenMapper;
 import com.ruoyi.voluntary.mapper.VolActivitySignupMapper;
 import com.ruoyi.voluntary.mapper.VolCheckinRecordMapper;
 import com.ruoyi.voluntary.service.IVolCheckinRecordService;
+import com.ruoyi.voluntary.service.IVolServiceRecordService;
 
 /**
  * 签到签退记录 Service 实现
@@ -50,6 +51,9 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
 
     @Autowired
     private VolActivitySignupMapper signupMapper;
+
+    @Autowired
+    private IVolServiceRecordService serviceRecordService;
 
     @Override
     public VolCheckinRecord selectVolCheckinRecordById(Long id)
@@ -167,7 +171,9 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
         {
             throw new ServiceException("签退失败");
         }
-        return checkinRecordMapper.selectVolCheckinRecordById(context.checkinRecord.getId());
+        VolCheckinRecord updatedRecord = checkinRecordMapper.selectVolCheckinRecordById(context.checkinRecord.getId());
+        serviceRecordService.generateServiceRecordFromCheckinRecord(updatedRecord.getId(), username);
+        return updatedRecord;
     }
 
     @Override
