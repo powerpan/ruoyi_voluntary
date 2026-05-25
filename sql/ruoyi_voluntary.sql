@@ -452,6 +452,26 @@ CREATE TABLE `vol_service_record` (
   `remark` varchar(500) DEFAULT NULL COMMENT '备注'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='服务记录表';
 
+DROP TABLE IF EXISTS `vol_notification`;
+CREATE TABLE `vol_notification` (
+  `id` bigint(20) NOT NULL COMMENT '通知ID',
+  `receiver_user_id` bigint(20) NOT NULL COMMENT '接收人用户ID',
+  `actor_user_id` bigint(20) DEFAULT NULL COMMENT '触发人用户ID',
+  `notice_type` varchar(32) NOT NULL COMMENT '通知类型',
+  `target_type` varchar(32) DEFAULT '' COMMENT '业务对象类型',
+  `target_id` bigint(20) DEFAULT NULL COMMENT '业务对象ID',
+  `title` varchar(160) NOT NULL COMMENT '通知标题',
+  `content` varchar(1000) DEFAULT '' COMMENT '通知内容',
+  `action_url` varchar(255) DEFAULT '' COMMENT '用户端跳转地址',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '通知状态（0未读 1已读）',
+  `read_time` datetime DEFAULT NULL COMMENT '阅读时间',
+  `create_by` varchar(64) DEFAULT '' COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT '' COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='业务通知表';
+
 -- Clean RuoYi seed data for local voluntary development.
 INSERT INTO `sys_config` (`config_id`, `config_name`, `config_key`, `config_value`, `config_type`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, '主框架页-默认皮肤样式名称', 'sys.index.skinName', 'skin-blue', 'Y', 'admin', NOW(), '', NULL, '蓝色 skin-blue、绿色 skin-green、紫色 skin-purple、红色 skin-red、黄色 skin-yellow'),
@@ -483,7 +503,9 @@ INSERT INTO `sys_dict_type` (`dict_id`, `dict_name`, `dict_type`, `status`, `cre
 (104, '报名状态', 'vol_signup_status', '0', 'admin', NOW(), '', NULL, '活动报名筛选状态'),
 (105, '二维码令牌状态', 'vol_qr_token_status', '0', 'admin', NOW(), '', NULL, '活动二维码令牌状态'),
 (106, '签到记录状态', 'vol_checkin_status', '0', 'admin', NOW(), '', NULL, '签到签退记录状态'),
-(107, '服务记录状态', 'vol_service_record_status', '0', 'admin', NOW(), '', NULL, '志愿服务记录状态');
+(107, '服务记录状态', 'vol_service_record_status', '0', 'admin', NOW(), '', NULL, '志愿服务记录状态'),
+(108, '业务通知类型', 'vol_notification_type', '0', 'admin', NOW(), '', NULL, '志愿业务通知类型'),
+(109, '业务通知状态', 'vol_notification_status', '0', 'admin', NOW(), '', NULL, '志愿业务通知阅读状态');
 
 INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value`, `dict_type`, `css_class`, `list_class`, `is_default`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, 1, '男', '0', 'sys_user_sex', '', '', 'Y', '0', 'admin', NOW(), '', NULL, '性别男'),
@@ -525,7 +547,15 @@ INSERT INTO `sys_dict_data` (`dict_code`, `dict_sort`, `dict_label`, `dict_value
 (160, 1, '待确认', '0', 'vol_service_record_status', '', 'warning', 'Y', '0', 'admin', NOW(), '', NULL, '服务记录待确认'),
 (161, 2, '有效', '1', 'vol_service_record_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '有效服务记录'),
 (162, 3, '异常', '2', 'vol_service_record_status', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '异常服务记录'),
-(163, 4, '作废', '3', 'vol_service_record_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '作废服务记录');
+(163, 4, '作废', '3', 'vol_service_record_status', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '作废服务记录'),
+(170, 1, '志愿者审核', 'volunteer_audit', 'vol_notification_type', '', 'warning', 'Y', '0', 'admin', NOW(), '', NULL, '志愿者审核通知'),
+(171, 2, '报名筛选', 'signup_review', 'vol_notification_type', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '报名筛选通知'),
+(172, 3, '活动变更', 'activity_change', 'vol_notification_type', '', 'primary', 'N', '0', 'admin', NOW(), '', NULL, '活动变更通知'),
+(173, 4, '签到异常', 'checkin_abnormal', 'vol_notification_type', '', 'danger', 'N', '0', 'admin', NOW(), '', NULL, '签到异常通知'),
+(174, 5, '服务记录', 'service_record', 'vol_notification_type', '', 'info', 'N', '0', 'admin', NOW(), '', NULL, '服务记录通知'),
+(175, 6, '系统消息', 'system', 'vol_notification_type', '', '', 'N', '0', 'admin', NOW(), '', NULL, '系统消息'),
+(180, 1, '未读', '0', 'vol_notification_status', '', 'warning', 'Y', '0', 'admin', NOW(), '', NULL, '未读通知'),
+(181, 2, '已读', '1', 'vol_notification_status', '', 'success', 'N', '0', 'admin', NOW(), '', NULL, '已读通知');
 
 INSERT INTO `sys_post` (`post_id`, `post_code`, `post_name`, `post_sort`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES
 (1, 'ceo', '平台负责人', 1, '0', 'admin', NOW(), '', NULL, ''),
@@ -644,6 +674,7 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 (2002, '志愿者查询', 2001, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:query', '#', 'admin', NOW(), '', NULL, ''),
 (2003, '志愿者编辑', 2001, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:edit', '#', 'admin', NOW(), '', NULL, ''),
 (2004, '志愿者审核', 2001, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:audit', '#', 'admin', NOW(), '', NULL, ''),
+(2005, '志愿者导出', 2001, 4, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:volunteer:export', '#', 'admin', NOW(), '', NULL, ''),
 (2010, '活动管理', 2000, 2, 'activity', 'voluntary/activity/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:activity:list', 'date', 'admin', NOW(), '', NULL, '活动创建、发布与维护'),
 (2011, '活动查询', 2010, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:activity:query', '#', 'admin', NOW(), '', NULL, ''),
 (2012, '活动新增', 2010, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:activity:add', '#', 'admin', NOW(), '', NULL, ''),
@@ -651,11 +682,18 @@ INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`
 (2020, '报名管理', 2000, 3, 'signup', 'voluntary/signup/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:signup:list', 'form', 'admin', NOW(), '', NULL, '活动报名筛选管理'),
 (2021, '报名查询', 2020, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:query', '#', 'admin', NOW(), '', NULL, ''),
 (2022, '报名筛选', 2020, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:review', '#', 'admin', NOW(), '', NULL, ''),
+(2023, '报名导出', 2020, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:signup:export', '#', 'admin', NOW(), '', NULL, ''),
 (2030, '签到管理', 2000, 4, 'checkin', 'voluntary/checkin/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:checkin:list', 'qrcode', 'admin', NOW(), '', NULL, '活动签到签退记录管理'),
 (2031, '签到查询', 2030, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:checkin:query', '#', 'admin', NOW(), '', NULL, ''),
 (2032, '二维码生成', 2030, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:checkin:qr', '#', 'admin', NOW(), '', NULL, ''),
+(2033, '签到导出', 2030, 3, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:checkin:export', '#', 'admin', NOW(), '', NULL, ''),
 (2040, '服务记录', 2000, 5, 'serviceRecord', 'voluntary/serviceRecord/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:serviceRecord:list', 'documentation', 'admin', NOW(), '', NULL, '志愿服务记录管理'),
-(2041, '服务记录查询', 2040, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:serviceRecord:query', '#', 'admin', NOW(), '', NULL, '');
+(2041, '服务记录查询', 2040, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:serviceRecord:query', '#', 'admin', NOW(), '', NULL, ''),
+(2042, '服务记录导出', 2040, 2, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:serviceRecord:export', '#', 'admin', NOW(), '', NULL, ''),
+(2050, '数据统计', 2000, 6, 'statistics', 'voluntary/statistics/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:statistics:view', 'chart', 'admin', NOW(), '', NULL, '志愿活动数据统计'),
+(2051, '统计导出', 2050, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:statistics:export', '#', 'admin', NOW(), '', NULL, ''),
+(2060, '通知记录', 2000, 7, 'notification', 'voluntary/notification/index', '', 1, 0, 'C', '0', '0', 'manager:voluntary:notification:list', 'message', 'admin', NOW(), '', NULL, '志愿业务通知记录'),
+(2061, '通知查询', 2060, 1, '#', '', '', 1, 0, 'F', '0', '0', 'manager:voluntary:notification:query', '#', 'admin', NOW(), '', NULL, '');
 
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (2, 2000),
@@ -663,6 +701,7 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (2, 2002),
 (2, 2003),
 (2, 2004),
+(2, 2005),
 (2, 2010),
 (2, 2011),
 (2, 2012),
@@ -670,11 +709,18 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 (2, 2020),
 (2, 2021),
 (2, 2022),
+(2, 2023),
 (2, 2030),
 (2, 2031),
 (2, 2032),
+(2, 2033),
 (2, 2040),
-(2, 2041);
+(2, 2041),
+(2, 2042),
+(2, 2050),
+(2, 2051),
+(2, 2060),
+(2, 2061);
 
 ALTER TABLE `sys_user_role`
   ADD PRIMARY KEY (`user_id`,`role_id`);
@@ -752,14 +798,14 @@ ALTER TABLE `sys_dict_data`
   ADD PRIMARY KEY (`dict_code`);
 
 ALTER TABLE `sys_dict_data`
-  MODIFY `dict_code` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典编码', AUTO_INCREMENT=164;
+  MODIFY `dict_code` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典编码', AUTO_INCREMENT=182;
 
 ALTER TABLE `sys_dict_type`
   ADD PRIMARY KEY (`dict_id`),
   ADD UNIQUE KEY `dict_type` (`dict_type`);
 
 ALTER TABLE `sys_dict_type`
-  MODIFY `dict_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键', AUTO_INCREMENT=108;
+  MODIFY `dict_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键', AUTO_INCREMENT=110;
 
 ALTER TABLE `sys_user_post`
   ADD PRIMARY KEY (`user_id`,`post_id`);
@@ -846,6 +892,15 @@ ALTER TABLE `vol_service_record`
 
 ALTER TABLE `vol_service_record`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '服务记录ID', AUTO_INCREMENT=1;
+
+ALTER TABLE `vol_notification`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_notification_receiver_status` (`receiver_user_id`,`status`,`create_time`),
+  ADD KEY `idx_notification_target` (`target_type`,`target_id`),
+  ADD KEY `idx_notification_type` (`notice_type`,`create_time`);
+
+ALTER TABLE `vol_notification`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '通知ID', AUTO_INCREMENT=1;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
