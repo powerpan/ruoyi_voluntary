@@ -7,7 +7,7 @@
     <div class="legal-links">
       <span>活动发布</span>
       <span>报名管理</span>
-      <span>扫码签到</span>
+      <span>令牌签到</span>
       <span>服务时长统计</span>
     </div>
   </footer>

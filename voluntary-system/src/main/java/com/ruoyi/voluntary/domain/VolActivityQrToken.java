@@ -5,19 +5,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
- * 活动二维码令牌 vol_activity_qr_token
+ * 活动签到令牌 vol_activity_qr_token
  */
 public class VolActivityQrToken extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
-    /** 二维码令牌ID */
+    /** 签到令牌ID */
     private Long id;
 
     /** 活动ID */
     private Long activityId;
 
-    /** 二维码随机令牌 */
+    /** 签到随机令牌 */
     private String token;
 
     /** 操作类型（checkin签到 checkout签退） */
@@ -36,7 +36,7 @@ public class VolActivityQrToken extends BaseEntity
     /** 服务地点，仅用于列表展示 */
     private String serviceLocation;
 
-    /** 扫码地址，仅用于接口返回 */
+    /** 令牌入口地址，仅用于接口返回 */
     private String scanUrl;
 
     public Long getId()

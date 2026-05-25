@@ -5,7 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import com.ruoyi.voluntary.domain.VolActivityQrToken;
 
 /**
- * 活动二维码令牌 Mapper
+ * 活动签到令牌 Mapper
  */
 public interface VolActivityQrTokenMapper
 {

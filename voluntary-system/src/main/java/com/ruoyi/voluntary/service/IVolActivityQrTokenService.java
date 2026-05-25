@@ -4,7 +4,7 @@ import java.util.List;
 import com.ruoyi.voluntary.domain.VolActivityQrToken;
 
 /**
- * 活动二维码令牌 Service
+ * 活动签到令牌 Service
  */
 public interface IVolActivityQrTokenService
 {

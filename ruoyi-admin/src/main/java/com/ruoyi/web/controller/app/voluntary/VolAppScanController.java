@@ -15,7 +15,7 @@ import com.ruoyi.voluntary.domain.VolScanInfo;
 import com.ruoyi.voluntary.service.IVolCheckinRecordService;
 
 /**
- * 用户端二维码扫码接口
+ * 用户端令牌签到接口
  */
 @RestController
 @RequestMapping("/app/voluntary/scan")
@@ -25,7 +25,7 @@ public class VolAppScanController extends BaseController
     private IVolCheckinRecordService checkinRecordService;
 
     /**
-     * 查询扫码令牌对应的活动和当前操作状态。
+     * 查询签到令牌对应的活动和当前操作状态。
      */
     @GetMapping("/{token}")
     public AjaxResult info(@PathVariable String token)
@@ -35,9 +35,9 @@ public class VolAppScanController extends BaseController
     }
 
     /**
-     * 二维码签到。
+     * 令牌签到。
      */
-    @Log(title = "二维码签到", businessType = BusinessType.INSERT)
+    @Log(title = "令牌签到", businessType = BusinessType.INSERT)
     @PostMapping("/{token}/checkin")
     public AjaxResult checkin(@PathVariable String token)
     {
@@ -46,9 +46,9 @@ public class VolAppScanController extends BaseController
     }
 
     /**
-     * 二维码签退。
+     * 令牌签退。
      */
-    @Log(title = "二维码签退", businessType = BusinessType.UPDATE)
+    @Log(title = "令牌签退", businessType = BusinessType.UPDATE)
     @PostMapping("/{token}/checkout")
     public AjaxResult checkout(@PathVariable String token)
     {

@@ -31,7 +31,7 @@
             v-model.trim="manualScanValue"
             clearable
             prefix-icon="el-icon-link"
-            placeholder="粘贴扫码地址或令牌"
+            placeholder="粘贴令牌或令牌入口地址"
             @keyup.enter.native="openManualToken"
           />
           <el-button type="primary" icon="el-icon-position" @click="openManualToken">打开</el-button>
@@ -96,7 +96,7 @@
               <p>{{ formatDate(checkinRecord && checkinRecord.checkoutTime) }}</p>
             </div>
             <div>
-              <span class="field-label">二维码有效期</span>
+              <span class="field-label">令牌有效期</span>
               <p>{{ formatDate(qrToken && qrToken.expireTime) }}</p>
             </div>
           </div>
@@ -185,12 +185,12 @@ export default {
     },
     actionLabel() {
       if (this.isCheckinAction) {
-        return '签到二维码'
+        return '签到令牌'
       }
       if (this.isCheckoutAction) {
-        return '签退二维码'
+        return '签退令牌'
       }
-      return '扫码入口'
+      return '令牌入口'
     },
     actionIcon() {
       return this.isCheckoutAction ? 'el-icon-finished' : 'el-icon-location-outline'
@@ -205,19 +205,19 @@ export default {
       if (this.isCheckinAction) {
         return '活动签到'
       }
-      return '扫码签到签退'
+      return '令牌签到签退'
     },
     pageSubtitle() {
       if (!this.token) {
-        return '粘贴后台生成的扫码地址或二维码令牌后继续。'
+        return '粘贴后台生成的令牌或令牌入口地址后继续。'
       }
       return '核对活动和报名状态后完成本次现场参与记录。'
     },
     scanMessage() {
       if (!this.token) {
-        return '缺少扫码令牌'
+        return '缺少签到令牌'
       }
-      return (this.scanInfo && this.scanInfo.message) || '正在读取扫码信息'
+      return (this.scanInfo && this.scanInfo.message) || '正在读取令牌信息'
     },
     canSubmit() {
       return !!(this.token && this.scanInfo && this.scanInfo.actionable && !this.loading && !this.submitting)
@@ -229,7 +229,7 @@ export default {
       if (this.isCheckinAction) {
         return '确认签到'
       }
-      return '等待扫码信息'
+      return '等待令牌信息'
     },
     statusClass() {
       if (this.errorMessage) {
@@ -251,12 +251,12 @@ export default {
     },
     statusHint() {
       if (this.errorMessage) {
-        return '请检查二维码是否过期，或联系活动管理员重新生成。'
+        return '请检查令牌是否过期，或联系活动管理员重新生成。'
       }
       if (this.canSubmit) {
-        return this.isCheckoutAction ? '签退成功后会生成服务记录并计入时长。' : '签到成功后请在活动结束时继续扫码签退。'
+        return this.isCheckoutAction ? '签退成功后会生成服务记录并计入时长。' : '签到成功后请在活动结束时继续使用签退令牌。'
       }
-      return '当前状态不允许执行该扫码动作。'
+      return '当前状态不允许执行该令牌动作。'
     },
     signupStatusLabel() {
       if (!this.signup) {
@@ -307,7 +307,7 @@ export default {
         this.scanInfo = res.data || null
       }).catch((err) => {
         this.scanInfo = null
-        this.errorMessage = (err && err.message) || '扫码信息读取失败'
+        this.errorMessage = (err && err.message) || '令牌信息读取失败'
       }).finally(() => {
         this.loading = false
       })
@@ -323,7 +323,7 @@ export default {
         this.$message.success(this.isCheckoutAction ? '签退成功' : '签到成功')
         this.loadScanInfo()
       }).catch((err) => {
-        this.errorMessage = (err && err.message) || '扫码操作失败'
+        this.errorMessage = (err && err.message) || '令牌操作失败'
       }).finally(() => {
         this.submitting = false
       })
@@ -331,7 +331,7 @@ export default {
     openManualToken() {
       const value = this.manualScanValue
       if (!value) {
-        this.$message.warning('请输入扫码地址或令牌')
+        this.$message.warning('请输入令牌或令牌入口地址')
         return
       }
       const token = this.extractToken(value)
@@ -339,7 +339,7 @@ export default {
         this.$message.error('未识别到有效令牌')
         return
       }
-      this.$router.push({ path: '/scan', query: { token } })
+      this.$router.push({ path: '/token-checkin', query: { token } })
     },
     extractToken(value) {
       if (!value) {

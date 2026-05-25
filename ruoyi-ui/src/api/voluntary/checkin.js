@@ -17,7 +17,7 @@ export function getCheckin(id) {
   })
 }
 
-// 查询活动二维码令牌
+// 查询活动签到令牌
 export function listQrToken(activityId, query) {
   return request({
     url: '/manager/voluntary/activities/' + activityId + '/qr-tokens',
@@ -26,7 +26,7 @@ export function listQrToken(activityId, query) {
   })
 }
 
-// 生成签到或签退二维码令牌
+// 生成签到或签退令牌
 export function generateQrToken(activityId, data) {
   return request({
     url: '/manager/voluntary/activities/' + activityId + '/qr-tokens',
@@ -35,7 +35,7 @@ export function generateQrToken(activityId, data) {
   })
 }
 
-// 停用二维码令牌
+// 停用签到令牌
 export function disableQrToken(id) {
   return request({
     url: '/manager/voluntary/qr-tokens/' + id + '/disable',

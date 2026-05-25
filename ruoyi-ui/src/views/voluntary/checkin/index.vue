@@ -4,7 +4,7 @@
       <div slot="header" class="voluntary-admin-title">
         <div>
           <h2>签到管理</h2>
-          <p>查看活动签到签退记录，生成签到和签退二维码地址。</p>
+          <p>查看活动签到签退记录，生成签到和签退令牌入口。</p>
         </div>
         <span class="meta">签到签退</span>
       </div>
@@ -76,11 +76,11 @@
           <el-button
             type="primary"
             plain
-            icon="el-icon-full-screen"
+            icon="el-icon-key"
             size="mini"
             @click="openQrDialog"
             v-hasPermi="['manager:voluntary:checkin:qr']"
-          >二维码</el-button>
+          >令牌</el-button>
         </el-col>
         <el-col :span="1.5">
           <el-button
@@ -160,7 +160,7 @@
     </el-card>
 
     <el-dialog
-      title="活动二维码"
+      title="活动签到令牌"
       :visible.sync="qrOpen"
       width="920px"
       append-to-body
@@ -203,7 +203,7 @@
       </el-form>
 
       <div class="qr-dialog-actions">
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="submitQr">生成二维码</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="mini" @click="submitQr">生成令牌</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="loadQrTokens">刷新</el-button>
       </div>
 
@@ -215,16 +215,27 @@
         show-icon
       >
         <template slot="title">
-          <span>{{ actionLabel(generatedToken.actionType) }}二维码已生成</span>
+          <span>{{ actionLabel(generatedToken.actionType) }}令牌已生成</span>
         </template>
-        <div class="qr-preview-block">
-          <img :src="qrDataUrl(generatedToken.scanUrl)" class="qr-preview-img" alt="二维码" />
-          <div class="qr-preview-copy">
-            <strong>现场扫码使用</strong>
-            <p>志愿者登录用户端后扫描该二维码，进入签到或签退确认页。</p>
+        <div class="token-preview-block">
+          <div class="token-preview-copy">
+            <strong>现场令牌使用</strong>
+            <p>管理员复制令牌或入口地址给志愿者，志愿者在用户端令牌签到页确认签到或签退。</p>
           </div>
         </div>
-        <div class="qr-url-row">
+        <div class="token-copy-row">
+          <span>令牌</span>
+          <el-input :value="generatedToken.token" readonly size="small" />
+          <el-button
+            size="small"
+            icon="el-icon-document-copy"
+            v-clipboard="generatedToken.token"
+            v-clipboard:success="handleCopySuccess"
+            v-clipboard:error="handleCopyError"
+          >复制</el-button>
+        </div>
+        <div class="token-copy-row">
+          <span>入口地址</span>
           <el-input :value="generatedToken.scanUrl" readonly size="small" />
           <el-button
             size="small"
@@ -242,19 +253,8 @@
             <span>{{ actionLabel(scope.row.actionType) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="二维码" width="100" align="center">
-          <template slot-scope="scope">
-            <el-popover v-if="scope.row.scanUrl" placement="right" width="250" trigger="hover">
-              <div class="qr-popover">
-                <img :src="qrDataUrl(scope.row.scanUrl)" class="qr-popover-img" alt="二维码" />
-                <p>{{ actionLabel(scope.row.actionType) }}二维码</p>
-              </div>
-              <img slot="reference" :src="qrDataUrl(scope.row.scanUrl)" class="qr-table-thumb" alt="二维码" />
-            </el-popover>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="扫码地址" prop="scanUrl" min-width="260" :show-overflow-tooltip="true" />
+        <el-table-column label="令牌" prop="token" min-width="220" :show-overflow-tooltip="true" />
+        <el-table-column label="入口地址" prop="scanUrl" min-width="260" :show-overflow-tooltip="true" />
         <el-table-column label="过期时间" prop="expireTime" width="150" align="center">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.expireTime) }}</span>
@@ -316,7 +316,6 @@
 <script>
 import { listActivity } from '@/api/voluntary/activity'
 import { disableQrToken, generateQrToken, getCheckin, listCheckin, listQrToken } from '@/api/voluntary/checkin'
-import { Ecc, QrCode } from '@rc-component/qrcode/lib/libs/qrcodegen'
 
 export default {
   name: 'VoluntaryCheckin',
@@ -350,7 +349,7 @@ export default {
       },
       qrRules: {
         activityId: [{ required: true, message: '请选择活动', trigger: 'change' }],
-        actionType: [{ required: true, message: '请选择二维码类型', trigger: 'change' }],
+        actionType: [{ required: true, message: '请选择令牌类型', trigger: 'change' }],
         expireMinutes: [{ required: true, message: '请填写有效分钟', trigger: 'change' }]
       }
     }
@@ -421,21 +420,21 @@ export default {
           expireMinutes: this.qrForm.expireMinutes
         }).then(response => {
           this.generatedToken = response.data
-          this.$modal.msgSuccess('二维码地址已生成')
+          this.$modal.msgSuccess('令牌入口已生成')
           this.loadQrTokens()
         })
       })
     },
     handleDisableQr(row) {
-      this.$modal.confirm('确认停用该二维码地址？').then(() => {
+      this.$modal.confirm('确认停用该令牌？').then(() => {
         return disableQrToken(row.id)
       }).then(() => {
-        this.$modal.msgSuccess('二维码地址已停用')
+        this.$modal.msgSuccess('令牌已停用')
         this.loadQrTokens()
       })
     },
     handleCopySuccess() {
-      this.$modal.msgSuccess('已复制扫码地址')
+      this.$modal.msgSuccess('已复制令牌内容')
     },
     handleCopyError() {
       this.$modal.msgError('复制失败，请手动复制')
@@ -449,7 +448,7 @@ export default {
     },
     methodLabel(value) {
       if (value === 'qr') {
-        return '二维码'
+        return '令牌'
       }
       if (value === 'manual') {
         return '人工'
@@ -464,39 +463,6 @@ export default {
         return '签退'
       }
       return value || '-'
-    },
-    qrDataUrl(value) {
-      if (!value) {
-        return ''
-      }
-      const qrCode = QrCode.encodeText(String(value), Ecc.MEDIUM)
-      const modules = qrCode.getModules()
-      const margin = 4
-      const size = modules.length + margin * 2
-      const path = []
-
-      modules.forEach((row, y) => {
-        let start = null
-        row.forEach((cell, x) => {
-          if (cell && start === null) {
-            start = x
-          }
-          const isEnd = x === row.length - 1
-          if ((!cell || isEnd) && start !== null) {
-            const end = cell && isEnd ? x + 1 : x
-            path.push(`M${start + margin} ${y + margin}h${end - start}v1H${start + margin}z`)
-            start = null
-          }
-        })
-      })
-
-      const svg = [
-        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">`,
-        '<rect width="100%" height="100%" fill="#fff"/>',
-        `<path d="${path.join('')}" fill="#17211f"/>`,
-        '</svg>'
-      ].join('')
-      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
     },
     formatRange(start, end) {
       const startText = this.parseTime(start) || '-'
@@ -536,54 +502,35 @@ export default {
   margin-bottom: 14px;
 }
 
-.qr-url-row {
+.token-copy-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
   gap: 8px;
   margin-top: 8px;
 }
 
-.qr-preview-block {
-  display: grid;
-  grid-template-columns: 156px minmax(0, 1fr);
-  align-items: center;
-  gap: 16px;
-  margin-top: 10px;
+.token-copy-row span {
+  color: #63716d;
+  font-weight: 600;
 }
 
-.qr-preview-img,
-.qr-popover-img {
-  width: 156px;
-  height: 156px;
+.token-preview-block {
+  margin-top: 10px;
+  padding: 12px 14px;
   border: 1px solid #dfe8e4;
   border-radius: 8px;
-  background: #fff;
-  padding: 8px;
+  background: #f6fbf9;
 }
 
-.qr-preview-copy strong {
+.token-preview-copy strong {
   color: #17211f;
   font-size: 15px;
 }
 
-.qr-preview-copy p,
-.qr-popover p {
+.token-preview-copy p {
   margin: 8px 0 0;
   color: #63716d;
   line-height: 1.6;
-}
-
-.qr-popover {
-  text-align: center;
-}
-
-.qr-table-thumb {
-  width: 44px;
-  height: 44px;
-  border: 1px solid #dfe8e4;
-  border-radius: 4px;
-  background: #fff;
-  padding: 3px;
-  cursor: zoom-in;
 }
 </style>

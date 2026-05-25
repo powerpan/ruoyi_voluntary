@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 扫码令牌信息
+// 签到令牌信息
 export function getScanInfo(token, config) {
   return request({
     url: `/app/voluntary/scan/${token}`,
@@ -9,7 +9,7 @@ export function getScanInfo(token, config) {
   })
 }
 
-// 二维码签到
+// 令牌签到
 export function scanCheckin(token) {
   return request({
     url: `/app/voluntary/scan/${token}/checkin`,
@@ -17,7 +17,7 @@ export function scanCheckin(token) {
   })
 }
 
-// 二维码签退
+// 令牌签退
 export function scanCheckout(token) {
   return request({
     url: `/app/voluntary/scan/${token}/checkout`,

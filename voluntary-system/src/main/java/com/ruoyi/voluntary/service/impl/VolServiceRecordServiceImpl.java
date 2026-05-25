@@ -154,7 +154,7 @@ public class VolServiceRecordServiceImpl implements IVolServiceRecordService
         serviceRecord.setStatus(serviceMinutes > 0 ? STATUS_EFFECTIVE : STATUS_ABNORMAL);
         serviceRecord.setCreateBy(username);
         serviceRecord.setCreateTime(now);
-        serviceRecord.setRemark(serviceMinutes > 0 ? "二维码签退自动生成服务记录" : "服务时长异常");
+        serviceRecord.setRemark(serviceMinutes > 0 ? "令牌签退自动生成服务记录" : "服务时长异常");
 
         if (serviceRecordMapper.insertVolServiceRecord(serviceRecord) <= 0 || serviceRecord.getId() == null)
         {

@@ -14,7 +14,7 @@ import com.ruoyi.voluntary.mapper.VolActivityQrTokenMapper;
 import com.ruoyi.voluntary.service.IVolActivityQrTokenService;
 
 /**
- * 活动二维码令牌 Service 实现
+ * 活动签到令牌 Service 实现
  */
 @Service
 public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
@@ -80,7 +80,7 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
     {
         if (qrToken == null || qrToken.getId() == null)
         {
-            throw new ServiceException("二维码令牌ID不能为空");
+            throw new ServiceException("签到令牌ID不能为空");
         }
         qrToken.setUpdateTime(new Date());
         return qrTokenMapper.updateVolActivityQrToken(qrToken);
@@ -105,10 +105,10 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
         qrToken.setStatus(STATUS_VALID);
         qrToken.setCreateBy(username);
         qrToken.setCreateTime(new Date());
-        qrToken.setRemark("管理端生成二维码令牌");
+        qrToken.setRemark("管理端生成签到令牌");
         if (qrTokenMapper.insertVolActivityQrToken(qrToken) <= 0 || qrToken.getId() == null)
         {
-            throw new ServiceException("二维码令牌生成失败");
+            throw new ServiceException("签到令牌生成失败");
         }
         return qrTokenMapper.selectVolActivityQrTokenById(qrToken.getId());
     }
@@ -119,12 +119,12 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
     {
         if (id == null)
         {
-            throw new ServiceException("二维码令牌ID不能为空");
+            throw new ServiceException("签到令牌ID不能为空");
         }
         VolActivityQrToken existedToken = qrTokenMapper.selectVolActivityQrTokenById(id);
         if (existedToken == null)
         {
-            throw new ServiceException("二维码令牌不存在");
+            throw new ServiceException("签到令牌不存在");
         }
         if (STATUS_INVALID.equals(existedToken.getStatus()))
         {
@@ -136,10 +136,10 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
         updateToken.setStatus(STATUS_INVALID);
         updateToken.setUpdateBy(username);
         updateToken.setUpdateTime(new Date());
-        updateToken.setRemark("管理端停用二维码令牌");
+        updateToken.setRemark("管理端停用签到令牌");
         if (qrTokenMapper.updateVolActivityQrToken(updateToken) <= 0)
         {
-            throw new ServiceException("二维码令牌停用失败");
+            throw new ServiceException("签到令牌停用失败");
         }
         return qrTokenMapper.selectVolActivityQrTokenById(id);
     }
@@ -180,7 +180,7 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
         }
         if (!ACTIVITY_STATUS_PUBLISHED.equals(activity.getStatus()))
         {
-            throw new ServiceException("只有已发布活动可以生成二维码");
+            throw new ServiceException("只有已发布活动可以生成签到令牌");
         }
     }
 
@@ -192,11 +192,11 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
         }
         if (expireMinutes <= 0)
         {
-            throw new ServiceException("二维码有效分钟数必须大于0");
+            throw new ServiceException("令牌有效分钟数必须大于0");
         }
         if (expireMinutes > MAX_EXPIRE_MINUTES)
         {
-            throw new ServiceException("二维码有效分钟数不能超过1440");
+            throw new ServiceException("令牌有效分钟数不能超过1440");
         }
         return expireMinutes;
     }
@@ -205,7 +205,7 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
     {
         if (qrToken == null)
         {
-            throw new ServiceException("二维码令牌不能为空");
+            throw new ServiceException("签到令牌不能为空");
         }
         if (qrToken.getActivityId() == null)
         {
@@ -213,12 +213,12 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
         }
         if (qrToken.getToken() == null || qrToken.getToken().trim().length() == 0)
         {
-            throw new ServiceException("二维码令牌内容不能为空");
+            throw new ServiceException("签到令牌内容不能为空");
         }
         validateActionType(qrToken.getActionType());
         if (qrToken.getExpireTime() == null)
         {
-            throw new ServiceException("二维码过期时间不能为空");
+            throw new ServiceException("令牌过期时间不能为空");
         }
     }
 
@@ -226,7 +226,7 @@ public class VolActivityQrTokenServiceImpl implements IVolActivityQrTokenService
     {
         if (!ACTION_CHECKIN.equals(actionType) && !ACTION_CHECKOUT.equals(actionType))
         {
-            throw new ServiceException("二维码操作类型只能为签到或签退");
+            throw new ServiceException("令牌操作类型只能为签到或签退");
         }
     }
 }

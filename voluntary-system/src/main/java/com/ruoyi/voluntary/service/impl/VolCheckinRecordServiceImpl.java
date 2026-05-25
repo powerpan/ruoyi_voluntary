@@ -130,7 +130,7 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
         checkinRecord.setStatus(STATUS_CHECKED_IN);
         checkinRecord.setCreateBy(username);
         checkinRecord.setCreateTime(now);
-        checkinRecord.setRemark("二维码签到");
+        checkinRecord.setRemark("令牌签到");
         if (checkinRecordMapper.insertVolCheckinRecord(checkinRecord) <= 0 || checkinRecord.getId() == null)
         {
             throw new ServiceException("签到失败");
@@ -166,7 +166,7 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
         updateRecord.setStatus(STATUS_CHECKED_OUT);
         updateRecord.setUpdateBy(username);
         updateRecord.setUpdateTime(now);
-        updateRecord.setRemark("二维码签退");
+        updateRecord.setRemark("令牌签退");
         if (checkinRecordMapper.updateVolCheckinRecord(updateRecord) <= 0)
         {
             throw new ServiceException("签退失败");
@@ -215,7 +215,7 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
     {
         if (token == null || token.trim().length() == 0)
         {
-            throw new ServiceException("扫码令牌不能为空");
+            throw new ServiceException("签到令牌不能为空");
         }
         if (userId == null)
         {
@@ -224,7 +224,7 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
         VolActivityQrToken qrToken = qrTokenMapper.selectValidVolActivityQrTokenByToken(token);
         if (qrToken == null)
         {
-            throw new ServiceException("二维码不存在、已失效或已过期");
+            throw new ServiceException("签到令牌不存在、已失效或已过期");
         }
         VolActivity activity = activityMapper.selectVolActivityById(qrToken.getActivityId());
         if (activity == null)
@@ -233,7 +233,7 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
         }
         if (!ACTIVITY_STATUS_PUBLISHED.equals(activity.getStatus()))
         {
-            throw new ServiceException("活动未发布，不能扫码签到签退");
+            throw new ServiceException("活动未发布，不能令牌签到签退");
         }
         VolActivitySignup signup = signupMapper.selectVolActivitySignupByActivityIdAndVolunteerUserId(
                 qrToken.getActivityId(), userId);
@@ -263,11 +263,11 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
     {
         if (context.signup == null)
         {
-            return "未报名该活动，不能扫码签到签退";
+            return "未报名该活动，不能令牌签到签退";
         }
         if (!SIGNUP_STATUS_APPROVED.equals(context.signup.getStatus()))
         {
-            return "报名未通过，不能扫码签到签退";
+            return "报名未通过，不能令牌签到签退";
         }
         if (VolActivityQrTokenServiceImpl.ACTION_CHECKIN.equals(context.qrToken.getActionType()))
         {
@@ -299,14 +299,14 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
                 return "已完成签退，不能重复签退";
             }
         }
-        return "当前扫码状态不允许操作";
+        return "当前令牌状态不允许操作";
     }
 
     private void requireActionType(VolActivityQrToken qrToken, String requiredActionType)
     {
         if (!requiredActionType.equals(qrToken.getActionType()))
         {
-            throw new ServiceException("二维码操作类型不匹配");
+            throw new ServiceException("令牌操作类型不匹配");
         }
     }
 
@@ -314,11 +314,11 @@ public class VolCheckinRecordServiceImpl implements IVolCheckinRecordService
     {
         if (signup == null)
         {
-            throw new ServiceException("未报名该活动，不能扫码签到签退");
+            throw new ServiceException("未报名该活动，不能令牌签到签退");
         }
         if (!SIGNUP_STATUS_APPROVED.equals(signup.getStatus()))
         {
-            throw new ServiceException("报名未通过，不能扫码签到签退");
+            throw new ServiceException("报名未通过，不能令牌签到签退");
         }
     }
 

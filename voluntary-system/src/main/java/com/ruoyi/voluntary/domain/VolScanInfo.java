@@ -3,13 +3,13 @@ package com.ruoyi.voluntary.domain;
 import java.io.Serializable;
 
 /**
- * 用户端扫码信息。
+ * 用户端令牌签到信息。
  */
 public class VolScanInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    /** 二维码令牌 */
+    /** 签到令牌 */
     private VolActivityQrToken qrToken;
 
     /** 活动信息 */
@@ -21,10 +21,10 @@ public class VolScanInfo implements Serializable
     /** 当前用户签到签退记录 */
     private VolCheckinRecord checkinRecord;
 
-    /** 是否可以执行当前扫码动作 */
+    /** 是否可以执行当前令牌动作 */
     private Boolean actionable;
 
-    /** 当前扫码动作提示 */
+    /** 当前令牌动作提示 */
     private String message;
 
     public VolActivityQrToken getQrToken()

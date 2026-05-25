@@ -42,10 +42,10 @@ public class VolCheckinRecordExport
     @Excel(name = "签退时间", sort = 10, dateFormat = "yyyy-MM-dd HH:mm:ss", width = 20)
     private Date checkoutTime;
 
-    @Excel(name = "签到方式", sort = 11, readConverterExp = "qr=二维码,manual=人工")
+    @Excel(name = "签到方式", sort = 11, readConverterExp = "qr=令牌,manual=人工")
     private String checkinMethod;
 
-    @Excel(name = "签退方式", sort = 12, readConverterExp = "qr=二维码,manual=人工")
+    @Excel(name = "签退方式", sort = 12, readConverterExp = "qr=令牌,manual=人工")
     private String checkoutMethod;
 
     @Excel(name = "签到状态", sort = 13, readConverterExp = "0=已签到,1=已签退,2=异常,3=人工确认")

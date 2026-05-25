@@ -20,7 +20,7 @@ import com.ruoyi.voluntary.domain.VolActivityQrToken;
 import com.ruoyi.voluntary.service.IVolActivityQrTokenService;
 
 /**
- * 管理端活动二维码令牌接口
+ * 管理端活动签到令牌接口
  */
 @RestController
 @RequestMapping("/manager/voluntary")
@@ -29,11 +29,11 @@ public class VolManagerQrTokenController extends BaseController
     @Autowired
     private IVolActivityQrTokenService qrTokenService;
 
-    @Value("${voluntary.scan-url-prefix:http://localhost:8088/#/scan?token=}")
+    @Value("${voluntary.scan-url-prefix:http://localhost:8088/#/token-checkin?token=}")
     private String scanUrlPrefix;
 
     /**
-     * 查询活动二维码令牌。
+     * 查询活动签到令牌。
      */
     @PreAuthorize("@ss.hasPermi('manager:voluntary:checkin:qr')")
     @GetMapping("/activities/{activityId}/qr-tokens")
@@ -48,10 +48,10 @@ public class VolManagerQrTokenController extends BaseController
     }
 
     /**
-     * 生成签到或签退二维码令牌。
+     * 生成签到或签退令牌。
      */
     @PreAuthorize("@ss.hasPermi('manager:voluntary:checkin:qr')")
-    @Log(title = "活动二维码", businessType = BusinessType.INSERT)
+    @Log(title = "活动签到令牌", businessType = BusinessType.INSERT)
     @PostMapping("/activities/{activityId}/qr-tokens")
     public AjaxResult generate(@PathVariable Long activityId, @RequestBody QrTokenBody body)
     {
@@ -64,10 +64,10 @@ public class VolManagerQrTokenController extends BaseController
     }
 
     /**
-     * 停用二维码令牌。
+     * 停用签到令牌。
      */
     @PreAuthorize("@ss.hasPermi('manager:voluntary:checkin:qr')")
-    @Log(title = "活动二维码", businessType = BusinessType.UPDATE)
+    @Log(title = "活动签到令牌", businessType = BusinessType.UPDATE)
     @PutMapping("/qr-tokens/{id}/disable")
     public AjaxResult disable(@PathVariable Long id)
     {
