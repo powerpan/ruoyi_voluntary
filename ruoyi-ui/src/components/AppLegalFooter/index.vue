@@ -1,14 +1,21 @@
+<!--
+  Copyright: https://github.com/powerpan/ruoyi_voluntary.git
+-->
 <template>
   <footer class="legal-footer" :class="[`legal-footer--${theme}`, { 'legal-footer--compact': compact }]">
     <div class="legal-brand">
       <strong>志愿活动管理系统</strong>
-      <span>志愿服务组织管理平台</span>
+      <a href="https://github.com/powerpan/ruoyi_voluntary.git" target="_blank" rel="noopener noreferrer">Copyright © 2026 https://github.com/powerpan/ruoyi_voluntary.git</a>
     </div>
     <div class="legal-links">
-      <span>志愿者审核</span>
-      <span>活动管理</span>
-      <span>报名筛选</span>
-      <span>服务统计</span>
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">京ICP备2026000000号-1</a>
+      <a href="http://www.beian.gov.cn/portal/registerSystemInfo" target="_blank" rel="noopener noreferrer">京公网安备 11010502060000号</a>
+      <span>志愿服务演示备案 2026-000001号</span>
+      <span>本地开发演示环境</span>
+    </div>
+    <div class="legal-meta">
+      <span>服务邮箱：support@ruoyi-voluntary.local</span>
+      <span>违法和不良信息举报：report@ruoyi-voluntary.local</span>
     </div>
   </footer>
 </template>
@@ -52,13 +59,14 @@ export default {
   color: #263445;
   font-size: 13px;
 }
-.legal-brand span,
+.legal-brand a,
 .legal-links a,
 .legal-links span,
 .legal-meta span {
   color: inherit;
   text-decoration: none;
 }
+.legal-brand a:hover,
 .legal-links a:hover {
   color: var(--current-color, #409EFF);
 }
@@ -67,6 +75,7 @@ export default {
   text-shadow: 0 1px 2px rgba(0, 0, 0, .22);
 }
 .legal-footer--dark .legal-brand strong,
+.legal-footer--dark .legal-brand a:hover,
 .legal-footer--dark .legal-links a:hover {
   color: #fff;
 }
