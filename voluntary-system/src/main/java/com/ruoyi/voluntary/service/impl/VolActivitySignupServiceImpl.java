@@ -6,12 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.voluntary.domain.VolActivity;
 import com.ruoyi.voluntary.domain.VolActivitySignup;
 import com.ruoyi.voluntary.domain.VolVolunteerProfile;
 import com.ruoyi.voluntary.mapper.VolActivityMapper;
 import com.ruoyi.voluntary.mapper.VolActivitySignupMapper;
 import com.ruoyi.voluntary.service.IVolActivitySignupService;
+import com.ruoyi.voluntary.service.IVolNotificationService;
 import com.ruoyi.voluntary.service.IVolVolunteerProfileService;
 
 /**
@@ -30,6 +32,10 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
 
     public static final Integer STATUS_CANCELLED = 4;
 
+    private static final String NOTICE_TYPE_SIGNUP_REVIEW = "signup_review";
+
+    private static final String TARGET_TYPE_SIGNUP = "signup";
+
     @Autowired
     private VolActivitySignupMapper signupMapper;
 
@@ -38,6 +44,9 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
 
     @Autowired
     private IVolVolunteerProfileService volunteerProfileService;
+
+    @Autowired
+    private IVolNotificationService notificationService;
 
     @Override
     public VolActivitySignup selectVolActivitySignupById(Long id)
@@ -196,7 +205,9 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
         {
             updateActivityApprovedCount(signup.getActivityId(), approvedCountAfterReview);
         }
-        return signupMapper.selectVolActivitySignupById(signup.getId());
+        VolActivitySignup reviewedSignup = signupMapper.selectVolActivitySignupById(signup.getId());
+        sendSignupReviewNotification(reviewedSignup, status, reviewReason, reviewerId, reviewerName);
+        return reviewedSignup;
     }
 
     @Override
@@ -394,5 +405,42 @@ public class VolActivitySignupServiceImpl implements IVolActivitySignupService
         {
             throw new ServiceException("活动已通过人数更新失败");
         }
+    }
+
+    private void sendSignupReviewNotification(VolActivitySignup signup, Integer status, String reviewReason,
+            Long reviewerId, String reviewerName)
+    {
+        notificationService.sendBusinessNotification(signup.getVolunteerUserId(), reviewerId, NOTICE_TYPE_SIGNUP_REVIEW,
+                TARGET_TYPE_SIGNUP, signup.getId(), resolveSignupReviewTitle(status, signup),
+                resolveSignupReviewContent(status, signup, reviewReason), "/signups", reviewerName);
+    }
+
+    private String resolveSignupReviewTitle(Integer status, VolActivitySignup signup)
+    {
+        String activityTitle = StringUtils.defaultIfEmpty(signup.getActivityTitle(), "志愿活动");
+        if (STATUS_APPROVED.equals(status))
+        {
+            return "报名已通过：" + activityTitle;
+        }
+        if (STATUS_REJECTED.equals(status))
+        {
+            return "报名未通过：" + activityTitle;
+        }
+        return "报名已候补：" + activityTitle;
+    }
+
+    private String resolveSignupReviewContent(Integer status, VolActivitySignup signup, String reviewReason)
+    {
+        String activityTitle = StringUtils.defaultIfEmpty(signup.getActivityTitle(), "该活动");
+        String reason = StringUtils.isBlank(reviewReason) ? "" : " 筛选意见：" + reviewReason;
+        if (STATUS_APPROVED.equals(status))
+        {
+            return "你报名的“" + activityTitle + "”已通过筛选，请按活动要求准时参与并完成签到签退。" + reason;
+        }
+        if (STATUS_REJECTED.equals(status))
+        {
+            return "你报名的“" + activityTitle + "”未通过筛选，可继续关注其他志愿活动。" + reason;
+        }
+        return "你报名的“" + activityTitle + "”已进入候补，请等待管理员后续通知。" + reason;
     }
 }

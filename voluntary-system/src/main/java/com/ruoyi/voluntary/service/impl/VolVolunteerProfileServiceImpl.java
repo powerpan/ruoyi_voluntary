@@ -19,6 +19,7 @@ import com.ruoyi.voluntary.domain.VolAuditRecord;
 import com.ruoyi.voluntary.domain.VolVolunteerProfile;
 import com.ruoyi.voluntary.mapper.VolAuditRecordMapper;
 import com.ruoyi.voluntary.mapper.VolVolunteerProfileMapper;
+import com.ruoyi.voluntary.service.IVolNotificationService;
 import com.ruoyi.voluntary.service.IVolVolunteerProfileService;
 
 /**
@@ -49,6 +50,8 @@ public class VolVolunteerProfileServiceImpl implements IVolVolunteerProfileServi
 
     private static final String MANAGER_ENABLE_REASON = "管理员启用志愿者档案";
 
+    private static final String NOTICE_TYPE_VOLUNTEER_AUDIT = "volunteer_audit";
+
     @Autowired
     private VolVolunteerProfileMapper volunteerProfileMapper;
 
@@ -60,6 +63,9 @@ public class VolVolunteerProfileServiceImpl implements IVolVolunteerProfileServi
 
     @Autowired
     private SysUserRoleMapper userRoleMapper;
+
+    @Autowired
+    private IVolNotificationService notificationService;
 
     @Override
     public VolVolunteerProfile selectVolVolunteerProfileById(Long id)
@@ -330,7 +336,56 @@ public class VolVolunteerProfileServiceImpl implements IVolVolunteerProfileServi
         {
             throw new ServiceException("志愿者审核记录创建失败");
         }
+        sendAuditNotification(existedProfile, auditStatus, auditReason, auditorId, auditorName);
         return volunteerProfileMapper.selectVolVolunteerProfileById(profileId);
+    }
+
+    private void sendAuditNotification(VolVolunteerProfile profile, Integer auditStatus, String auditReason,
+            Long auditorId, String auditorName)
+    {
+        notificationService.sendBusinessNotification(profile.getUserId(), auditorId, NOTICE_TYPE_VOLUNTEER_AUDIT,
+                TARGET_TYPE_VOLUNTEER, profile.getId(), resolveAuditNoticeTitle(auditStatus),
+                resolveAuditNoticeContent(auditStatus, auditReason), "/me", auditorName);
+    }
+
+    private String resolveAuditNoticeTitle(Integer auditStatus)
+    {
+        if (AUDIT_STATUS_APPROVED.equals(auditStatus))
+        {
+            return "志愿者档案审核通过";
+        }
+        if (AUDIT_STATUS_REJECTED.equals(auditStatus))
+        {
+            return "志愿者档案审核驳回";
+        }
+        if (AUDIT_STATUS_DISABLED.equals(auditStatus))
+        {
+            return "志愿者档案已禁用";
+        }
+        return "志愿者档案已启用";
+    }
+
+    private String resolveAuditNoticeContent(Integer auditStatus, String auditReason)
+    {
+        String reason = StringUtils.defaultString(auditReason);
+        if (AUDIT_STATUS_APPROVED.equals(auditStatus))
+        {
+            return "你的志愿者档案已审核通过，可以报名参与活动。" + appendReason(reason);
+        }
+        if (AUDIT_STATUS_REJECTED.equals(auditStatus))
+        {
+            return "你的志愿者档案审核未通过，请根据审核意见修改资料后重新提交。" + appendReason(reason);
+        }
+        if (AUDIT_STATUS_DISABLED.equals(auditStatus))
+        {
+            return "你的志愿者档案已被禁用，暂时不能报名或参与活动。" + appendReason(reason);
+        }
+        return "你的志愿者档案已恢复启用，可以继续使用志愿服务功能。" + appendReason(reason);
+    }
+
+    private String appendReason(String reason)
+    {
+        return StringUtils.isBlank(reason) ? "" : " 审核意见：" + reason;
     }
 
     private VolVolunteerProfile requireProfile(Long profileId)

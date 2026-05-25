@@ -20,6 +20,9 @@ public interface IVolNotificationService
 
     int updateVolNotification(VolNotification notification);
 
+    int sendBusinessNotification(Long receiverUserId, Long actorUserId, String noticeType, String targetType,
+            Long targetId, String title, String content, String actionUrl, String createBy);
+
     int markMyNotificationRead(Long userId, Long id, String username);
 
     int markAllMyNotificationsRead(Long userId, String username);

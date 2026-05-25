@@ -15,6 +15,7 @@ import com.ruoyi.voluntary.mapper.VolActivityMapper;
 import com.ruoyi.voluntary.mapper.VolCheckinRecordMapper;
 import com.ruoyi.voluntary.mapper.VolServiceRecordMapper;
 import com.ruoyi.voluntary.mapper.VolVolunteerProfileMapper;
+import com.ruoyi.voluntary.service.IVolNotificationService;
 import com.ruoyi.voluntary.service.IVolServiceRecordService;
 
 /**
@@ -31,6 +32,12 @@ public class VolServiceRecordServiceImpl implements IVolServiceRecordService
 
     public static final Integer STATUS_VOIDED = 3;
 
+    private static final String NOTICE_TYPE_SERVICE_RECORD = "service_record";
+
+    private static final String NOTICE_TYPE_CHECKIN_ABNORMAL = "checkin_abnormal";
+
+    private static final String TARGET_TYPE_SERVICE_RECORD = "service_record";
+
     @Autowired
     private VolServiceRecordMapper serviceRecordMapper;
 
@@ -42,6 +49,9 @@ public class VolServiceRecordServiceImpl implements IVolServiceRecordService
 
     @Autowired
     private VolVolunteerProfileMapper volunteerProfileMapper;
+
+    @Autowired
+    private IVolNotificationService notificationService;
 
     @Override
     public VolServiceRecord selectVolServiceRecordById(Long id)
@@ -151,7 +161,9 @@ public class VolServiceRecordServiceImpl implements IVolServiceRecordService
             throw new ServiceException("生成服务记录失败");
         }
         refreshVolunteerServiceSummary(checkinRecord.getVolunteerUserId(), username, now);
-        return serviceRecordMapper.selectVolServiceRecordById(serviceRecord.getId());
+        VolServiceRecord generatedRecord = serviceRecordMapper.selectVolServiceRecordById(serviceRecord.getId());
+        sendServiceRecordNotification(generatedRecord, username);
+        return generatedRecord;
     }
 
     @Override
@@ -167,7 +179,13 @@ public class VolServiceRecordServiceImpl implements IVolServiceRecordService
             serviceRecord.setServiceMinutes(0);
         }
         serviceRecord.setCreateTime(new Date());
-        return serviceRecordMapper.insertVolServiceRecord(serviceRecord);
+        int rows = serviceRecordMapper.insertVolServiceRecord(serviceRecord);
+        if (rows > 0 && serviceRecord.getId() != null)
+        {
+            sendServiceRecordNotification(serviceRecordMapper.selectVolServiceRecordById(serviceRecord.getId()),
+                    serviceRecord.getCreateBy());
+        }
+        return rows;
     }
 
     @Override
@@ -177,8 +195,19 @@ public class VolServiceRecordServiceImpl implements IVolServiceRecordService
         {
             throw new ServiceException("服务记录ID不能为空");
         }
+        VolServiceRecord existedRecord = serviceRecordMapper.selectVolServiceRecordById(serviceRecord.getId());
+        if (existedRecord == null)
+        {
+            throw new ServiceException("服务记录不存在");
+        }
         serviceRecord.setUpdateTime(new Date());
-        return serviceRecordMapper.updateVolServiceRecord(serviceRecord);
+        int rows = serviceRecordMapper.updateVolServiceRecord(serviceRecord);
+        if (rows > 0 && serviceRecord.getStatus() != null && !serviceRecord.getStatus().equals(existedRecord.getStatus()))
+        {
+            sendServiceRecordNotification(serviceRecordMapper.selectVolServiceRecordById(serviceRecord.getId()),
+                    serviceRecord.getUpdateBy());
+        }
+        return rows;
     }
 
     @Override
@@ -271,5 +300,50 @@ public class VolServiceRecordServiceImpl implements IVolServiceRecordService
         {
             throw new ServiceException("更新志愿者服务时长失败");
         }
+    }
+
+    private void sendServiceRecordNotification(VolServiceRecord serviceRecord, String operatorName)
+    {
+        if (serviceRecord == null || serviceRecord.getVolunteerUserId() == null || serviceRecord.getId() == null)
+        {
+            return;
+        }
+        Integer status = serviceRecord.getStatus();
+        if (!STATUS_EFFECTIVE.equals(status) && !STATUS_ABNORMAL.equals(status) && !STATUS_VOIDED.equals(status))
+        {
+            return;
+        }
+        notificationService.sendBusinessNotification(serviceRecord.getVolunteerUserId(), null,
+                STATUS_ABNORMAL.equals(status) ? NOTICE_TYPE_CHECKIN_ABNORMAL : NOTICE_TYPE_SERVICE_RECORD,
+                TARGET_TYPE_SERVICE_RECORD, serviceRecord.getId(), resolveServiceRecordTitle(serviceRecord),
+                resolveServiceRecordContent(serviceRecord), "/service-records", operatorName);
+    }
+
+    private String resolveServiceRecordTitle(VolServiceRecord serviceRecord)
+    {
+        if (STATUS_ABNORMAL.equals(serviceRecord.getStatus()))
+        {
+            return "服务记录异常";
+        }
+        if (STATUS_VOIDED.equals(serviceRecord.getStatus()))
+        {
+            return "服务记录已作废";
+        }
+        return "服务记录已生成";
+    }
+
+    private String resolveServiceRecordContent(VolServiceRecord serviceRecord)
+    {
+        String activityTitle = serviceRecord.getActivityTitle() == null ? "志愿活动" : serviceRecord.getActivityTitle();
+        if (STATUS_ABNORMAL.equals(serviceRecord.getStatus()))
+        {
+            return "你参与的“" + activityTitle + "”服务记录存在异常，请联系管理员核对签到签退信息。";
+        }
+        if (STATUS_VOIDED.equals(serviceRecord.getStatus()))
+        {
+            return "你参与的“" + activityTitle + "”服务记录已作废，如有疑问请联系管理员。";
+        }
+        Integer minutes = serviceRecord.getServiceMinutes() == null ? 0 : serviceRecord.getServiceMinutes();
+        return "你参与的“" + activityTitle + "”已生成有效服务记录，计入服务时长 " + minutes + " 分钟。";
     }
 }

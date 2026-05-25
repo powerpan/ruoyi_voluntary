@@ -74,6 +74,23 @@ public class VolNotificationServiceImpl implements IVolNotificationService
     }
 
     @Override
+    public int sendBusinessNotification(Long receiverUserId, Long actorUserId, String noticeType, String targetType,
+            Long targetId, String title, String content, String actionUrl, String createBy)
+    {
+        VolNotification notification = new VolNotification();
+        notification.setReceiverUserId(receiverUserId);
+        notification.setActorUserId(actorUserId);
+        notification.setNoticeType(noticeType);
+        notification.setTargetType(targetType);
+        notification.setTargetId(targetId);
+        notification.setTitle(title);
+        notification.setContent(content);
+        notification.setActionUrl(actionUrl);
+        notification.setCreateBy(createBy);
+        return insertVolNotification(notification);
+    }
+
+    @Override
     public int markMyNotificationRead(Long userId, Long id, String username)
     {
         requireUserId(userId);
