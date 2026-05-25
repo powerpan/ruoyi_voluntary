@@ -104,6 +104,16 @@
             v-hasPermi="['manager:voluntary:signup:review']"
           >拒绝</el-button>
         </el-col>
+        <el-col :span="1.5">
+          <el-button
+            type="warning"
+            plain
+            icon="el-icon-download"
+            size="mini"
+            @click="handleExport"
+            v-hasPermi="['manager:voluntary:signup:export']"
+          >导出</el-button>
+        </el-col>
         <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
       </el-row>
 
@@ -377,6 +387,11 @@ export default {
         this.detail = response.data
         this.detailOpen = true
       })
+    },
+    handleExport() {
+      this.download('manager/voluntary/signups/export', {
+        ...this.queryParams
+      }, `报名记录_${new Date().getTime()}.xlsx`)
     },
     canReview(row) {
       return row && (row.status === 0 || row.status === 3)

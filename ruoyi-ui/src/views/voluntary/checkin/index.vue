@@ -82,6 +82,16 @@
             v-hasPermi="['manager:voluntary:checkin:qr']"
           >二维码</el-button>
         </el-col>
+        <el-col :span="1.5">
+          <el-button
+            type="warning"
+            plain
+            icon="el-icon-download"
+            size="mini"
+            @click="handleExport"
+            v-hasPermi="['manager:voluntary:checkin:export']"
+          >导出</el-button>
+        </el-col>
         <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
       </el-row>
 
@@ -429,6 +439,13 @@ export default {
     },
     handleCopyError() {
       this.$modal.msgError('复制失败，请手动复制')
+    },
+    handleExport() {
+      this.download(
+        'manager/voluntary/checkins/export',
+        this.addDateRange({ ...this.queryParams }, this.dateRange),
+        `签到记录_${new Date().getTime()}.xlsx`
+      )
     },
     methodLabel(value) {
       if (value === 'qr') {

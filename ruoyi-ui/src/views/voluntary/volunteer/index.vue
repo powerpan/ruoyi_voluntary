@@ -107,6 +107,16 @@
             v-hasPermi="['manager:voluntary:volunteer:query']"
           >审核记录</el-button>
         </el-col>
+        <el-col :span="1.5">
+          <el-button
+            type="warning"
+            plain
+            icon="el-icon-download"
+            size="mini"
+            @click="handleExport"
+            v-hasPermi="['manager:voluntary:volunteer:export']"
+          >导出</el-button>
+        </el-col>
         <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
       </el-row>
 
@@ -604,6 +614,11 @@ export default {
       }).catch(() => {
         this.recordLoading = false
       })
+    },
+    handleExport() {
+      this.download('manager/voluntary/volunteers/export', {
+        ...this.queryParams
+      }, `志愿者档案_${new Date().getTime()}.xlsx`)
     },
     formatMinutes(minutes) {
       const total = Number(minutes || 0)

@@ -36,6 +36,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { getUnreadNotificationCount } from '@/api/voluntary/notification'
 
 export default {
   name: 'Header',
@@ -51,12 +52,20 @@ export default {
   watch: {
     token: {
       immediate: true,
-      handler() {
-        this.unreadCount = 0
+      handler(value) {
+        if (value) {
+          this.startNoticePolling()
+          this.loadUnreadCount()
+        } else {
+          this.stopNoticePolling()
+          this.unreadCount = 0
+        }
       }
     },
     '$route.path'() {
-      this.unreadCount = 0
+      if (this.token) {
+        this.loadUnreadCount()
+      }
     }
   },
   mounted() {
@@ -64,16 +73,40 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('voluntary-notification-updated', this.resetUnreadCount)
-    if (this.noticeTimer) {
-      window.clearInterval(this.noticeTimer)
-    }
+    this.stopNoticePolling()
   },
   methods: {
+    loadUnreadCount() {
+      if (!this.token) {
+        this.unreadCount = 0
+        return Promise.resolve()
+      }
+      return getUnreadNotificationCount({ noErrorMessage: true }).then((res) => {
+        if (this.token) {
+          this.unreadCount = Number(res.data || 0)
+        }
+      }).catch(() => {})
+    },
+    startNoticePolling() {
+      this.stopNoticePolling()
+      this.noticeTimer = window.setInterval(() => {
+        if (this.token) {
+          this.loadUnreadCount()
+        }
+      }, 60000)
+    },
+    stopNoticePolling() {
+      if (this.noticeTimer) {
+        window.clearInterval(this.noticeTimer)
+        this.noticeTimer = null
+      }
+    },
     resetUnreadCount() {
-      this.unreadCount = 0
+      this.loadUnreadCount()
     },
     logout() {
       this.$store.dispatch('LogOut').finally(() => {
+        this.stopNoticePolling()
         this.unreadCount = 0
         this.$router.push('/')
       })
