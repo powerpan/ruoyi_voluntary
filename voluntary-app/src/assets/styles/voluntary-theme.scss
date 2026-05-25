@@ -71,17 +71,76 @@ select {
   border-color: var(--voluntary-accent);
 }
 
-.el-card,
 .el-dialog {
   border-radius: var(--voluntary-radius);
 }
 
-.el-card {
-  border-color: var(--voluntary-border);
+.voluntary-main .el-card {
+  overflow: hidden;
+  border: 1px solid var(--voluntary-border) !important;
+  border-radius: var(--voluntary-radius);
+  background: var(--voluntary-surface);
+  box-shadow: var(--voluntary-shadow-soft) !important;
 }
 
-.el-card__header {
-  border-bottom-color: var(--voluntary-border);
+.voluntary-main .el-card__header {
+  min-height: auto;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--voluntary-border);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+}
+
+.voluntary-main .el-card__body {
+  padding: 18px;
+}
+
+.voluntary-main .filter-panel {
+  border-color: #d8e5df !important;
+}
+
+.voluntary-main .filter-panel .el-card__body {
+  padding: 14px 18px;
+}
+
+.voluntary-main .filter-form > .el-input,
+.voluntary-main .filter-form > .el-select,
+.voluntary-main .filter-form > .el-date-editor,
+.voluntary-main .filter-form .el-date-editor.el-input,
+.voluntary-main .filter-form .el-date-editor.el-input__inner {
+  width: 100%;
+  min-width: 0;
+}
+
+.voluntary-main .filter-actions {
+  min-width: max-content;
+  flex: 0 0 auto;
+}
+
+.voluntary-main .filter-actions .el-button {
+  flex: 0 0 auto;
+}
+
+.voluntary-main .scan-card-head span > i,
+.voluntary-main .panel-head span > i {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--voluntary-primary);
+  background: var(--voluntary-primary-soft);
+  font-size: 15px;
+  flex: 0 0 auto;
+}
+
+.voluntary-main .scan-card-head,
+.voluntary-main .panel-head {
+  color: var(--voluntary-text);
+}
+
+.voluntary-main .el-empty__description p {
+  color: var(--voluntary-text-muted);
 }
 
 .el-input__inner,

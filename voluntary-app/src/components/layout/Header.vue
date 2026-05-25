@@ -179,6 +179,7 @@ export default {
 }
 .nav a {
   position: relative;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -189,7 +190,6 @@ export default {
   text-decoration: none;
   font-size: 14px;
   white-space: nowrap;
-  overflow: hidden;
   transition: background .18s ease, color .18s ease;
 }
 .nav a.router-link-exact-active {

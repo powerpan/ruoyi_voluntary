@@ -478,6 +478,10 @@ export default {
   border-radius: 8px;
 }
 
+.scan-card ::v-deep .el-card__body {
+  min-height: 0;
+}
+
 .scan-card-head {
   display: flex;
   align-items: center;
@@ -497,14 +501,25 @@ export default {
 .result-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
+}
+
+.activity-panel > div,
+.record-panel > div,
+.result-grid > div {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #edf3f0;
+  border-radius: 8px;
+  background: var(--voluntary-surface-soft);
 }
 
 .field-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
   color: var(--voluntary-text-muted);
   font-size: 13px;
+  font-weight: 700;
 }
 
 .activity-panel strong,
@@ -513,11 +528,13 @@ export default {
 .result-grid p {
   margin: 0;
   color: #2d3c38;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.65;
   word-break: break-word;
 }
 
 .activity-panel strong {
+  color: var(--voluntary-text);
   font-size: 18px;
 }
 
