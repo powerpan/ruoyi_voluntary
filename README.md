@@ -48,6 +48,8 @@
 - P5 管理端页面记录：[docs/37-P5-管理端页面记录.md](./docs/37-P5-管理端页面记录.md)
 - P5 用户端通知页面记录：[docs/38-P5-用户端通知页面记录.md](./docs/38-P5-用户端通知页面记录.md)
 - P5 阶段验收记录：[docs/39-P5-阶段验收记录.md](./docs/39-P5-阶段验收记录.md)
+- P6 部署与最终验证记录：[docs/40-P6-部署与最终验证记录.md](./docs/40-P6-部署与最终验证记录.md)
+- P6 论文支撑材料与测试用例：[docs/41-P6-论文支撑材料与测试用例.md](./docs/41-P6-论文支撑材料与测试用例.md)
 - 已迁移 RuoYi 后端、管理端、用户端、部署脚本和 SQL 基础目录。
 - 已新建 `voluntary-system` 最小业务模块，并接入 Maven 聚合构建。
 - 已将项目名、数据库名、环境变量、启动脚本、部署目录改为志愿活动管理系统语义。
@@ -105,7 +107,7 @@ P3 已完成：
 
 当前未实现：
 
-- P6 最终验证、部署说明和论文支撑材料。
+- P6 SQL 临时库导入复核和最终阶段验收记录。
 
 ## 项目目标
 
@@ -151,6 +153,99 @@ P3 已完成：
 | 管理端 | Vue 2、Element UI、RuoYi Admin |
 | 志愿者端 | Vue 2、Element UI、独立前台应用 |
 | 部署 | 本地脚本、Docker Compose 可选 |
+
+## 快速部署与启动
+
+### 1. 环境准备
+
+本地开发建议准备：
+
+| 组件 | 说明 |
+| --- | --- |
+| JDK | 8 或兼容 Spring Boot 2.5 的版本 |
+| Maven | 3.6+ |
+| Node.js | 14 或 16 |
+| MySQL | 5.7 或 8.0 |
+| Redis | 5.0+ |
+
+### 2. 导入数据库
+
+完整演示库：
+
+```bash
+mysql -uroot -p < sql/ruoyi_voluntary.sql
+```
+
+最小初始化库：
+
+```bash
+mysql -uroot -p < sql/ruoyi_voluntary_minimal.sql
+```
+
+默认数据库名为 `ruoyi_voluntary`。后端本地开发默认连接 `localhost:3306`，用户名 `root`，密码 `root`，可通过环境变量覆盖：
+
+```bash
+export RUOYI_VOLUNTARY_DB_USER=root
+export RUOYI_VOLUNTARY_DB_PASSWORD=root
+```
+
+### 3. 启动服务
+
+推荐在项目根目录执行：
+
+```bash
+./start-dev.command
+```
+
+默认地址：
+
+| 服务 | 地址 |
+| --- | --- |
+| 后端 | `http://localhost:8080` |
+| 管理端 | `http://localhost:8081` |
+| 用户端 | `http://localhost:8088` |
+
+停止服务：
+
+```bash
+./stop-dev.command
+```
+
+### 4. 默认账号
+
+| 类型 | 账号 | 密码 |
+| --- | --- | --- |
+| 管理员 | `admin` | `admin123` |
+
+志愿者账号建议通过用户端注册后由管理员审核通过。当前本地演示库可保留阶段验收账号，但初始化脚本只依赖管理员账号。
+
+### 5. 验证命令
+
+后端测试：
+
+```bash
+./scripts/run-tests.sh
+```
+
+后端打包：
+
+```bash
+mvn -pl ruoyi-admin -am package -DskipTests
+```
+
+管理端构建：
+
+```bash
+cd ruoyi-ui
+npm run build:prod
+```
+
+用户端构建：
+
+```bash
+cd voluntary-app
+npm run build:prod
+```
 
 ## 推进方式
 
@@ -210,15 +305,16 @@ P3 已完成：
 38. [docs/37-P5-管理端页面记录.md](./docs/37-P5-管理端页面记录.md)：查看 P5-F 数据统计、通知记录和导出按钮页面接入验证结果。
 39. [docs/38-P5-用户端通知页面记录.md](./docs/38-P5-用户端通知页面记录.md)：查看 P5-G 用户端通知列表、未读数、已读操作、筛选和跳转验证结果。
 40. [docs/39-P5-阶段验收记录.md](./docs/39-P5-阶段验收记录.md)：查看 P5-H 统计、通知、导出和数据整理验收结果。
+41. [docs/40-P6-部署与最终验证记录.md](./docs/40-P6-部署与最终验证记录.md)：查看部署步骤、默认账号、演示流程、截图清单和最终验证安排。
+42. [docs/41-P6-论文支撑材料与测试用例.md](./docs/41-P6-论文支撑材料与测试用例.md)：查看论文素材、模块说明、测试用例和不足展望。
 
 ## 当前下一步
 
 当前进入 `P6 最终验证、部署说明和论文支撑材料`：
 
-1. 运行后端最终编译和前端最终构建。
-2. 验证完整 SQL 和 minimal SQL 初始化脚本。
-3. 整理 README 部署和启动说明，写清环境、导库、启动、账号。
-4. 梳理核心流程截图清单。
-5. 补齐论文支撑材料和最终测试用例。
+1. 使用普通终端或 phpMyAdmin 对完整 SQL 和 minimal SQL 做临时库导入复核。
+2. 按截图清单保存论文和答辩截图。
+3. 整理 P6 最终验收记录。
+4. 确认 README 最终状态后进入项目交付。
 
 P6 完成后，项目进入最终交付状态。
