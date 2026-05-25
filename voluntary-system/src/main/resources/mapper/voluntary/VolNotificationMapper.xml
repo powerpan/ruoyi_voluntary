@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolNotificationMapper">
+
+    <resultMap type="VolNotification" id="VolNotificationResult">
+        <id property="id" column="id"/>
+        <result property="receiverUserId" column="receiver_user_id"/>
+        <result property="actorUserId" column="actor_user_id"/>
+        <result property="noticeType" column="notice_type"/>
+        <result property="targetType" column="target_type"/>
+        <result property="targetId" column="target_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="actionUrl" column="action_url"/>
+        <result property="status" column="status"/>
+        <result property="readTime" column="read_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <result property="receiverUserName" column="receiver_user_name"/>
+        <result property="receiverNickName" column="receiver_nick_name"/>
+        <result property="actorUserName" column="actor_user_name"/>
+        <result property="actorNickName" column="actor_nick_name"/>
+    </resultMap>
+
+    <sql id="selectVolNotificationVo">
+        select n.id, n.receiver_user_id, n.actor_user_id, n.notice_type, n.target_type,
+               n.target_id, n.title, n.content, n.action_url, n.status, n.read_time,
+               n.create_by, n.create_time, n.update_by, n.update_time, n.remark,
+               ru.user_name as receiver_user_name, ru.nick_name as receiver_nick_name,
+               au.user_name as actor_user_name, au.nick_name as actor_nick_name
+        from vol_notification n
+        left join sys_user ru on ru.user_id = n.receiver_user_id
+        left join sys_user au on au.user_id = n.actor_user_id
+    </sql>
+
+    <select id="selectVolNotificationById" parameterType="Long" resultMap="VolNotificationResult">
+        <include refid="selectVolNotificationVo"/>
+        where n.id = #{id}
+    </select>
+
+    <select id="selectVolNotificationList" parameterType="VolNotification" resultMap="VolNotificationResult">
+        <include refid="selectVolNotificationVo"/>
+        <where>
+            <if test="receiverUserId != null">and n.receiver_user_id = #{receiverUserId}</if>
+            <if test="actorUserId != null">and n.actor_user_id = #{actorUserId}</if>
+            <if test="noticeType != null and noticeType != ''">and n.notice_type = #{noticeType}</if>
+            <if test="targetType != null and targetType != ''">and n.target_type = #{targetType}</if>
+            <if test="targetId != null">and n.target_id = #{targetId}</if>
+            <if test="title != null and title != ''">and n.title like concat('%', #{title}, '%')</if>
+            <if test="status != null">and n.status = #{status}</if>
+            <if test="receiverUserName != null and receiverUserName != ''">
+                and (ru.user_name like concat('%', #{receiverUserName}, '%')
+                    or ru.nick_name like concat('%', #{receiverUserName}, '%'))
+            </if>
+            <if test="params != null and params.beginTime != null and params.beginTime != ''">
+                and n.create_time &gt;= #{params.beginTime}
+            </if>
+            <if test="params != null and params.endTime != null and params.endTime != ''">
+                and n.create_time &lt;= #{params.endTime}
+            </if>
+        </where>
+        order by n.create_time desc, n.id desc
+    </select>
+
+    <select id="countUnreadByReceiverUserId" parameterType="Long" resultType="int">
+        select count(1)
+        from vol_notification
+        where receiver_user_id = #{receiverUserId}
+          and status = 0
+    </select>
+
+    <insert id="insertVolNotification" parameterType="VolNotification" useGeneratedKeys="true" keyProperty="id">
+        insert into vol_notification(
+            receiver_user_id, actor_user_id, notice_type, target_type, target_id,
+            title, content, action_url, status, read_time,
+            create_by, create_time, update_by, update_time, remark
+        ) values (
+            #{receiverUserId}, #{actorUserId}, #{noticeType}, #{targetType}, #{targetId},
+            #{title}, #{content}, #{actionUrl}, #{status}, #{readTime},
+            #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="updateVolNotification" parameterType="VolNotification">
+        update vol_notification
+        <set>
+            <if test="receiverUserId != null">receiver_user_id = #{receiverUserId},</if>
+            <if test="actorUserId != null">actor_user_id = #{actorUserId},</if>
+            <if test="noticeType != null">notice_type = #{noticeType},</if>
+            <if test="targetType != null">target_type = #{targetType},</if>
+            <if test="targetId != null">target_id = #{targetId},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="actionUrl != null">action_url = #{actionUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="readTime != null">read_time = #{readTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="markReadByIdAndReceiverUserId">
+        update vol_notification
+        set status = 1,
+            read_time = sysdate(),
+            update_by = #{updateBy},
+            update_time = sysdate()
+        where id = #{id}
+          and receiver_user_id = #{receiverUserId}
+          and status = 0
+    </update>
+
+    <update id="markAllReadByReceiverUserId">
+        update vol_notification
+        set status = 1,
+            read_time = sysdate(),
+            update_by = #{updateBy},
+            update_time = sysdate()
+        where receiver_user_id = #{receiverUserId}
+          and status = 0
+    </update>
+</mapper>
