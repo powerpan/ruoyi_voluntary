@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.manager.voluntary;
 
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +16,10 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.voluntary.domain.VolAuditRecord;
 import com.ruoyi.voluntary.domain.VolVolunteerProfile;
+import com.ruoyi.voluntary.domain.export.VolVolunteerProfileExport;
 import com.ruoyi.voluntary.service.IVolVolunteerProfileService;
 
 /**
@@ -39,6 +42,20 @@ public class VolManagerVolunteerController extends BaseController
         startPage();
         List<VolVolunteerProfile> list = volunteerProfileService.selectVolVolunteerProfileList(profile);
         return getDataTable(list);
+    }
+
+    /**
+     * 导出志愿者档案。
+     */
+    @PreAuthorize("@ss.hasPermi('manager:voluntary:volunteer:export')")
+    @Log(title = "志愿者档案", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, VolVolunteerProfile profile)
+    {
+        List<VolVolunteerProfile> list = volunteerProfileService.selectVolVolunteerProfileList(profile);
+        ExcelUtil<VolVolunteerProfileExport> util = new ExcelUtil<VolVolunteerProfileExport>(
+                VolVolunteerProfileExport.class);
+        util.exportExcel(response, VolVolunteerProfileExport.fromList(list), "志愿者档案数据");
     }
 
     /**

@@ -1,10 +1,12 @@
 package com.ruoyi.web.controller.manager.voluntary;
 
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +16,9 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.voluntary.domain.VolActivitySignup;
+import com.ruoyi.voluntary.domain.export.VolActivitySignupExport;
 import com.ruoyi.voluntary.service.IVolActivitySignupService;
 
 /**
@@ -37,6 +41,20 @@ public class VolManagerSignupController extends BaseController
         startPage();
         List<VolActivitySignup> list = signupService.selectVolActivitySignupList(signup);
         return getDataTable(list);
+    }
+
+    /**
+     * 导出报名名单。
+     */
+    @PreAuthorize("@ss.hasPermi('manager:voluntary:signup:export')")
+    @Log(title = "报名名单", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, VolActivitySignup signup)
+    {
+        List<VolActivitySignup> list = signupService.selectVolActivitySignupList(signup);
+        ExcelUtil<VolActivitySignupExport> util = new ExcelUtil<VolActivitySignupExport>(
+                VolActivitySignupExport.class);
+        util.exportExcel(response, VolActivitySignupExport.fromList(list), "报名名单数据");
     }
 
     /**
