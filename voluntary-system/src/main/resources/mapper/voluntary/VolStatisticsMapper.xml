@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.voluntary.mapper.VolStatisticsMapper">
+
+    <resultMap type="VolStatisticsOverview" id="VolStatisticsOverviewResult">
+        <result property="volunteerTotal" column="volunteer_total"/>
+        <result property="approvedVolunteerTotal" column="approved_volunteer_total"/>
+        <result property="activityTotal" column="activity_total"/>
+        <result property="publishedActivityTotal" column="published_activity_total"/>
+        <result property="signupTotal" column="signup_total"/>
+        <result property="approvedSignupTotal" column="approved_signup_total"/>
+        <result property="checkinTotal" column="checkin_total"/>
+        <result property="checkoutTotal" column="checkout_total"/>
+        <result property="serviceRecordTotal" column="service_record_total"/>
+        <result property="serviceMinutesTotal" column="service_minutes_total"/>
+        <result property="abnormalTotal" column="abnormal_total"/>
+    </resultMap>
+
+    <resultMap type="VolActivityStatistics" id="VolActivityStatisticsResult">
+        <result property="activityId" column="activity_id"/>
+        <result property="activityTitle" column="activity_title"/>
+        <result property="recruitCount" column="recruit_count"/>
+        <result property="signupCount" column="signup_count"/>
+        <result property="approvedSignupCount" column="approved_signup_count"/>
+        <result property="checkinCount" column="checkin_count"/>
+        <result property="checkoutCount" column="checkout_count"/>
+        <result property="serviceRecordCount" column="service_record_count"/>
+        <result property="serviceMinutes" column="service_minutes"/>
+    </resultMap>
+
+    <resultMap type="VolVolunteerStatistics" id="VolVolunteerStatisticsResult">
+        <result property="volunteerUserId" column="volunteer_user_id"/>
+        <result property="realName" column="real_name"/>
+        <result property="phone" column="phone"/>
+        <result property="organization" column="organization"/>
+        <result property="serviceCount" column="service_count"/>
+        <result property="serviceMinutes" column="service_minutes"/>
+        <result property="latestServiceDate" column="latest_service_date"/>
+    </resultMap>
+
+    <resultMap type="VolOrganizationStatistics" id="VolOrganizationStatisticsResult">
+        <result property="organization" column="organization"/>
+        <result property="volunteerCount" column="volunteer_count"/>
+        <result property="serviceCount" column="service_count"/>
+        <result property="serviceMinutes" column="service_minutes"/>
+        <result property="latestServiceDate" column="latest_service_date"/>
+    </resultMap>
+
+    <resultMap type="VolTrendStatistics" id="VolTrendStatisticsResult">
+        <result property="statDate" column="stat_date"/>
+        <result property="serviceCount" column="service_count"/>
+        <result property="serviceMinutes" column="service_minutes"/>
+    </resultMap>
+
+    <select id="selectOverview" parameterType="VolStatisticsQuery" resultMap="VolStatisticsOverviewResult">
+        select
+            (select count(1)
+             from vol_volunteer_profile p
+             <where>
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(p.create_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(p.create_time) &lt;= #{endDate}</if>
+             </where>) as volunteer_total,
+            (select count(1)
+             from vol_volunteer_profile p
+             <where>
+                 and p.audit_status = 1
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(p.create_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(p.create_time) &lt;= #{endDate}</if>
+             </where>) as approved_volunteer_total,
+            (select count(1)
+             from vol_activity a
+             <where>
+                 <if test="activityId != null">and a.id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(a.start_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(a.start_time) &lt;= #{endDate}</if>
+             </where>) as activity_total,
+            (select count(1)
+             from vol_activity a
+             <where>
+                 and a.status = 1
+                 <if test="activityId != null">and a.id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(a.start_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(a.start_time) &lt;= #{endDate}</if>
+             </where>) as published_activity_total,
+            (select count(1)
+             from vol_activity_signup s
+             left join vol_activity a on a.id = s.activity_id
+             left join vol_volunteer_profile p on p.user_id = s.volunteer_user_id
+             <where>
+                 <if test="activityId != null">and s.activity_id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(s.create_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(s.create_time) &lt;= #{endDate}</if>
+             </where>) as signup_total,
+            (select count(1)
+             from vol_activity_signup s
+             left join vol_activity a on a.id = s.activity_id
+             left join vol_volunteer_profile p on p.user_id = s.volunteer_user_id
+             <where>
+                 and s.status = 1
+                 <if test="activityId != null">and s.activity_id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(s.create_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(s.create_time) &lt;= #{endDate}</if>
+             </where>) as approved_signup_total,
+            (select count(1)
+             from vol_checkin_record c
+             left join vol_activity a on a.id = c.activity_id
+             left join vol_volunteer_profile p on p.user_id = c.volunteer_user_id
+             <where>
+                 and c.checkin_time is not null
+                 <if test="activityId != null">and c.activity_id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(c.checkin_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(c.checkin_time) &lt;= #{endDate}</if>
+             </where>) as checkin_total,
+            (select count(1)
+             from vol_checkin_record c
+             left join vol_activity a on a.id = c.activity_id
+             left join vol_volunteer_profile p on p.user_id = c.volunteer_user_id
+             <where>
+                 and c.status = 1
+                 <if test="activityId != null">and c.activity_id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and date(c.checkin_time) &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and date(c.checkin_time) &lt;= #{endDate}</if>
+             </where>) as checkout_total,
+            (select count(1)
+             from vol_service_record r
+             left join vol_activity a on a.id = r.activity_id
+             left join vol_volunteer_profile p on p.user_id = r.volunteer_user_id
+             <where>
+                 and r.status = 1
+                 <if test="activityId != null">and r.activity_id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and r.service_date &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and r.service_date &lt;= #{endDate}</if>
+             </where>) as service_record_total,
+            (select ifnull(sum(r.service_minutes), 0)
+             from vol_service_record r
+             left join vol_activity a on a.id = r.activity_id
+             left join vol_volunteer_profile p on p.user_id = r.volunteer_user_id
+             <where>
+                 and r.status = 1
+                 <if test="activityId != null">and r.activity_id = #{activityId}</if>
+                 <if test="activityTitle != null and activityTitle != ''">
+                     and a.title like concat('%', #{activityTitle}, '%')
+                 </if>
+                 <if test="organization != null and organization != ''">
+                     and p.organization like concat('%', #{organization}, '%')
+                 </if>
+                 <if test="volunteerRealName != null and volunteerRealName != ''">
+                     and p.real_name like concat('%', #{volunteerRealName}, '%')
+                 </if>
+                 <if test="beginDate != null">and r.service_date &gt;= #{beginDate}</if>
+                 <if test="endDate != null">and r.service_date &lt;= #{endDate}</if>
+             </where>) as service_minutes_total,
+            ((select count(1)
+              from vol_service_record r
+              left join vol_activity a on a.id = r.activity_id
+              left join vol_volunteer_profile p on p.user_id = r.volunteer_user_id
+              <where>
+                  and r.status = 2
+                  <if test="activityId != null">and r.activity_id = #{activityId}</if>
+                  <if test="activityTitle != null and activityTitle != ''">
+                      and a.title like concat('%', #{activityTitle}, '%')
+                  </if>
+                  <if test="organization != null and organization != ''">
+                      and p.organization like concat('%', #{organization}, '%')
+                  </if>
+                  <if test="volunteerRealName != null and volunteerRealName != ''">
+                      and p.real_name like concat('%', #{volunteerRealName}, '%')
+                  </if>
+                  <if test="beginDate != null">and r.service_date &gt;= #{beginDate}</if>
+                  <if test="endDate != null">and r.service_date &lt;= #{endDate}</if>
+              </where>)
+             +
+             (select count(1)
+              from vol_checkin_record c
+              left join vol_activity a on a.id = c.activity_id
+              left join vol_volunteer_profile p on p.user_id = c.volunteer_user_id
+              <where>
+                  and c.status = 2
+                  <if test="activityId != null">and c.activity_id = #{activityId}</if>
+                  <if test="activityTitle != null and activityTitle != ''">
+                      and a.title like concat('%', #{activityTitle}, '%')
+                  </if>
+                  <if test="organization != null and organization != ''">
+                      and p.organization like concat('%', #{organization}, '%')
+                  </if>
+                  <if test="volunteerRealName != null and volunteerRealName != ''">
+                      and p.real_name like concat('%', #{volunteerRealName}, '%')
+                  </if>
+                  <if test="beginDate != null">and date(c.checkin_time) &gt;= #{beginDate}</if>
+                  <if test="endDate != null">and date(c.checkin_time) &lt;= #{endDate}</if>
+              </where>)) as abnormal_total
+    </select>
+
+    <select id="selectActivityStatisticsList" parameterType="VolStatisticsQuery" resultMap="VolActivityStatisticsResult">
+        select a.id as activity_id,
+               a.title as activity_title,
+               a.recruit_count,
+               ifnull(s.signup_count, 0) as signup_count,
+               ifnull(s.approved_signup_count, 0) as approved_signup_count,
+               ifnull(c.checkin_count, 0) as checkin_count,
+               ifnull(c.checkout_count, 0) as checkout_count,
+               ifnull(r.service_record_count, 0) as service_record_count,
+               ifnull(r.service_minutes, 0) as service_minutes
+        from vol_activity a
+        left join (
+            select s.activity_id,
+                   count(1) as signup_count,
+                   sum(case when s.status = 1 then 1 else 0 end) as approved_signup_count
+            from vol_activity_signup s
+            left join vol_volunteer_profile p on p.user_id = s.volunteer_user_id
+            <where>
+                <if test="organization != null and organization != ''">
+                    and p.organization like concat('%', #{organization}, '%')
+                </if>
+                <if test="volunteerRealName != null and volunteerRealName != ''">
+                    and p.real_name like concat('%', #{volunteerRealName}, '%')
+                </if>
+                <if test="beginDate != null">and date(s.create_time) &gt;= #{beginDate}</if>
+                <if test="endDate != null">and date(s.create_time) &lt;= #{endDate}</if>
+            </where>
+            group by s.activity_id
+        ) s on s.activity_id = a.id
+        left join (
+            select c.activity_id,
+                   sum(case when c.checkin_time is not null then 1 else 0 end) as checkin_count,
+                   sum(case when c.status = 1 then 1 else 0 end) as checkout_count
+            from vol_checkin_record c
+            left join vol_volunteer_profile p on p.user_id = c.volunteer_user_id
+            <where>
+                <if test="organization != null and organization != ''">
+                    and p.organization like concat('%', #{organization}, '%')
+                </if>
+                <if test="volunteerRealName != null and volunteerRealName != ''">
+                    and p.real_name like concat('%', #{volunteerRealName}, '%')
+                </if>
+                <if test="beginDate != null">and date(c.checkin_time) &gt;= #{beginDate}</if>
+                <if test="endDate != null">and date(c.checkin_time) &lt;= #{endDate}</if>
+            </where>
+            group by c.activity_id
+        ) c on c.activity_id = a.id
+        left join (
+            select r.activity_id,
+                   count(1) as service_record_count,
+                   ifnull(sum(r.service_minutes), 0) as service_minutes
+            from vol_service_record r
+            left join vol_volunteer_profile p on p.user_id = r.volunteer_user_id
+            <where>
+                and r.status = 1
+                <if test="organization != null and organization != ''">
+                    and p.organization like concat('%', #{organization}, '%')
+                </if>
+                <if test="volunteerRealName != null and volunteerRealName != ''">
+                    and p.real_name like concat('%', #{volunteerRealName}, '%')
+                </if>
+                <if test="beginDate != null">and r.service_date &gt;= #{beginDate}</if>
+                <if test="endDate != null">and r.service_date &lt;= #{endDate}</if>
+            </where>
+            group by r.activity_id
+        ) r on r.activity_id = a.id
+        <where>
+            <if test="activityId != null">and a.id = #{activityId}</if>
+            <if test="activityTitle != null and activityTitle != ''">
+                and a.title like concat('%', #{activityTitle}, '%')
+            </if>
+            <if test="beginDate != null">and date(a.start_time) &gt;= #{beginDate}</if>
+            <if test="endDate != null">and date(a.start_time) &lt;= #{endDate}</if>
+        </where>
+        order by a.start_time desc, a.id desc
+    </select>
+
+    <select id="selectVolunteerStatisticsList" parameterType="VolStatisticsQuery" resultMap="VolVolunteerStatisticsResult">
+        select p.user_id as volunteer_user_id,
+               p.real_name,
+               p.phone,
+               p.organization,
+               count(r.id) as service_count,
+               ifnull(sum(r.service_minutes), 0) as service_minutes,
+               max(r.service_date) as latest_service_date
+        from vol_volunteer_profile p
+        left join vol_service_record r on r.volunteer_user_id = p.user_id
+            and r.status = 1
+            <if test="activityId != null">and r.activity_id = #{activityId}</if>
+            <if test="beginDate != null">and r.service_date &gt;= #{beginDate}</if>
+            <if test="endDate != null">and r.service_date &lt;= #{endDate}</if>
+        left join vol_activity a on a.id = r.activity_id
+        <where>
+            <if test="activityTitle != null and activityTitle != ''">
+                and a.title like concat('%', #{activityTitle}, '%')
+            </if>
+            <if test="organization != null and organization != ''">
+                and p.organization like concat('%', #{organization}, '%')
+            </if>
+            <if test="volunteerRealName != null and volunteerRealName != ''">
+                and p.real_name like concat('%', #{volunteerRealName}, '%')
+            </if>
+        </where>
+        group by p.user_id, p.real_name, p.phone, p.organization
+        order by service_minutes desc, service_count desc, p.user_id asc
+    </select>
+
+    <select id="selectOrganizationStatisticsList" parameterType="VolStatisticsQuery" resultMap="VolOrganizationStatisticsResult">
+        select ifnull(nullif(p.organization, ''), '未填写') as organization,
+               count(distinct p.user_id) as volunteer_count,
+               count(r.id) as service_count,
+               ifnull(sum(r.service_minutes), 0) as service_minutes,
+               max(r.service_date) as latest_service_date
+        from vol_volunteer_profile p
+        left join vol_service_record r on r.volunteer_user_id = p.user_id
+            and r.status = 1
+            <if test="activityId != null">and r.activity_id = #{activityId}</if>
+            <if test="beginDate != null">and r.service_date &gt;= #{beginDate}</if>
+            <if test="endDate != null">and r.service_date &lt;= #{endDate}</if>
+        left join vol_activity a on a.id = r.activity_id
+        <where>
+            <if test="activityTitle != null and activityTitle != ''">
+                and a.title like concat('%', #{activityTitle}, '%')
+            </if>
+            <if test="organization != null and organization != ''">
+                and p.organization like concat('%', #{organization}, '%')
+            </if>
+            <if test="volunteerRealName != null and volunteerRealName != ''">
+                and p.real_name like concat('%', #{volunteerRealName}, '%')
+            </if>
+        </where>
+        group by ifnull(nullif(p.organization, ''), '未填写')
+        order by service_minutes desc, service_count desc, organization asc
+    </select>
+
+    <select id="selectTrendStatisticsList" parameterType="VolStatisticsQuery" resultMap="VolTrendStatisticsResult">
+        select
+            <choose>
+                <when test="trendType == 'month'">date_format(r.service_date, '%Y-%m')</when>
+                <otherwise>date_format(r.service_date, '%Y-%m-%d')</otherwise>
+            </choose> as stat_date,
+            count(1) as service_count,
+            ifnull(sum(r.service_minutes), 0) as service_minutes
+        from vol_service_record r
+        left join vol_activity a on a.id = r.activity_id
+        left join vol_volunteer_profile p on p.user_id = r.volunteer_user_id
+        <where>
+            and r.status = 1
+            <if test="activityId != null">and r.activity_id = #{activityId}</if>
+            <if test="activityTitle != null and activityTitle != ''">
+                and a.title like concat('%', #{activityTitle}, '%')
+            </if>
+            <if test="organization != null and organization != ''">
+                and p.organization like concat('%', #{organization}, '%')
+            </if>
+            <if test="volunteerRealName != null and volunteerRealName != ''">
+                and p.real_name like concat('%', #{volunteerRealName}, '%')
+            </if>
+            <if test="beginDate != null">and r.service_date &gt;= #{beginDate}</if>
+            <if test="endDate != null">and r.service_date &lt;= #{endDate}</if>
+        </where>
+        group by
+            <choose>
+                <when test="trendType == 'month'">date_format(r.service_date, '%Y-%m')</when>
+                <otherwise>date_format(r.service_date, '%Y-%m-%d')</otherwise>
+            </choose>
+        order by stat_date asc
+    </select>
+</mapper>
