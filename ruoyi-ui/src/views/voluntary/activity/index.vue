@@ -6,7 +6,7 @@
           <h2>活动管理</h2>
           <p>创建、编辑、发布、下架、结束和取消志愿活动。</p>
         </div>
-        <span class="meta">P3 活动发布</span>
+        <span class="meta">活动发布</span>
       </div>
 
       <el-form

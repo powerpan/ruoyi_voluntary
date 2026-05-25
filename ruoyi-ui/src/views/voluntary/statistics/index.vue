@@ -6,7 +6,7 @@
           <h2>数据统计</h2>
           <p>按活动、志愿者、组织和服务日期汇总志愿服务数据。</p>
         </div>
-        <span class="meta">P5 数据统计</span>
+        <span class="meta">数据统计</span>
       </div>
 
       <el-form

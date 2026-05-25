@@ -6,7 +6,7 @@
           <h2>通知记录</h2>
           <p>查看志愿业务站内通知、接收人、业务对象和已读状态。</p>
         </div>
-        <span class="meta">P5 业务通知</span>
+        <span class="meta">业务通知</span>
       </div>
 
       <el-form

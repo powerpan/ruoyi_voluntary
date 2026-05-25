@@ -6,7 +6,7 @@
           <h2>签到管理</h2>
           <p>查看活动签到签退记录，生成签到和签退二维码地址。</p>
         </div>
-        <span class="meta">P4 签到签退</span>
+        <span class="meta">签到签退</span>
       </div>
 
       <el-form

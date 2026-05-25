@@ -5,8 +5,8 @@
         <p class="eyebrow">RuoYi Voluntary</p>
         <h1>志愿活动管理系统</h1>
         <p>
-          当前已完成志愿者审核、活动报名、二维码签到签退、服务记录、
-          服务时长统计和站内通知等核心功能，可用于最终演示。
+          为志愿者提供活动浏览、报名参与、扫码签到签退、服务记录查询和通知提醒，
+          让活动组织、现场服务和时长统计形成完整闭环。
         </p>
         <div class="hero-actions">
           <el-button type="primary" icon="el-icon-guide" @click="$router.push('/activities')">活动浏览</el-button>
@@ -54,8 +54,8 @@
 
     <section class="stage-section">
       <div class="stage-title">
-        <h2>核心功能</h2>
-        <p>系统已形成从志愿者注册审核到活动参与、签到签退、服务时长统计和通知反馈的完整闭环。</p>
+        <h2>服务功能</h2>
+        <p>围绕志愿服务参与流程，集中处理活动、报名、签到、记录和通知。</p>
       </div>
       <div class="stage-grid">
         <div v-for="item in stages" :key="item.name" class="stage-card">
@@ -113,11 +113,11 @@ export default {
       auditReason: '',
       approved: false,
       stages: [
-        { name: 'P1', title: '工程骨架', desc: '迁移 RuoYi 基础结构，完成编译、构建和三端启动验证。' },
-        { name: 'P2', title: '志愿者档案', desc: '实现注册、资料维护、审核状态展示和管理员审核。' },
-        { name: 'P3', title: '活动报名', desc: '接入活动浏览、活动详情、报名申请和我的报名。' },
-        { name: 'P4', title: '签到时长', desc: '接入二维码签到签退、服务记录和个人时长汇总。' },
-        { name: 'P5', title: '统计通知', desc: '接入管理端统计、业务通知、我的通知和 Excel 导出。' }
+        { name: '活动', title: '活动浏览', desc: '查看活动时间、地点、招募人数、服务对象和报名要求。' },
+        { name: '报名', title: '报名参与', desc: '提交活动报名申请，查看待筛选、已通过、候补或拒绝状态。' },
+        { name: '签到', title: '扫码签到签退', desc: '到场后扫码签到，服务结束后扫码签退，减少纸质登记。' },
+        { name: '记录', title: '服务记录', desc: '查看个人服务明细、有效服务次数和累计服务时长。' },
+        { name: '通知', title: '消息提醒', desc: '接收审核结果、报名处理和服务记录相关站内通知。' }
       ]
     }
   },

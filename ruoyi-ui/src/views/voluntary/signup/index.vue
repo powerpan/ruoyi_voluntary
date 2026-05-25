@@ -6,7 +6,7 @@
           <h2>报名管理</h2>
           <p>查看活动报名人员，执行通过、拒绝和候补筛选。</p>
         </div>
-        <span class="meta">P3 报名筛选</span>
+        <span class="meta">报名筛选</span>
       </div>
 
       <el-form

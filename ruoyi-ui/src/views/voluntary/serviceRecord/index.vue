@@ -6,7 +6,7 @@
           <h2>服务记录</h2>
           <p>查看志愿者有效服务记录、服务时长和生成来源。</p>
         </div>
-        <span class="meta">P4 服务时长</span>
+        <span class="meta">时长记录</span>
       </div>
 
       <el-form

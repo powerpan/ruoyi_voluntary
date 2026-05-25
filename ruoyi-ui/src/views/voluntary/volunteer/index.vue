@@ -6,7 +6,7 @@
           <h2>志愿者审核</h2>
           <p>维护志愿者实名档案，处理待审核、驳回、禁用和启用状态。</p>
         </div>
-        <span class="meta">P2 志愿者档案</span>
+        <span class="meta">实名档案</span>
       </div>
 
       <el-form
